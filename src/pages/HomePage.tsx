@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Header } from '../components/layout/Header'
 import { NoteForm } from '../components/note/NoteForm'
 import { AiMessageCard } from '../components/note/AiMessageCard'
+import { ShareCardModal } from '../components/note/ShareCardModal'
 import { useNotes } from '../hooks/useNotes'
 import { useStreak } from '../hooks/useStreak'
 import { HeroBanner } from '../components/note/HeroBanner'
@@ -30,6 +31,7 @@ export function HomePage() {
   const todayNote = findTodayNote(notes)
   const [isEditing, setIsEditing] = useState(false)
   const [aiMessage, setAiMessage] = useState<string | null>(null)
+  const [showShareModal, setShowShareModal] = useState(false)
 
   function handleSubmit(data: {
     gratitude1: string
@@ -140,6 +142,16 @@ export function HomePage() {
                 기록 보기
               </button>
             </div>
+
+            {/* 공유 카드 만들기 */}
+            <button
+              type="button"
+              onClick={() => setShowShareModal(true)}
+              className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-primary-400 py-2.5 text-sm font-medium text-primary-500 hover:bg-primary-50 transition-colors"
+            >
+              <span>✨</span>
+              공유 카드 만들기
+            </button>
           </section>
         ) : (
           /* ── 작성 폼 ── */
@@ -174,6 +186,11 @@ export function HomePage() {
           </section>
         )}
       </div>
+
+      {/* 공유 카드 모달 */}
+      {showShareModal && todayNote && (
+        <ShareCardModal note={todayNote} onClose={() => setShowShareModal(false)} />
+      )}
     </div>
   )
 }
