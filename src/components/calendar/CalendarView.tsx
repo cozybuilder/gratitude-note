@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { Note } from '../../types/note'
+import { getTodayGratitudeDate } from '../../utils/date'
 
 interface CalendarViewProps {
   notes: Note[]
@@ -12,9 +13,10 @@ function toDateKey(year: number, month: number, day: number): string {
 }
 
 export function CalendarView({ notes }: CalendarViewProps) {
-  const today = new Date()
-  const [year, setYear] = useState(today.getFullYear())
-  const [month, setMonth] = useState(today.getMonth()) // 0-indexed
+  const todayGratitude = getTodayGratitudeDate() // "YYYY-MM-DD" 4시 기준
+  const [todayY, todayM] = todayGratitude.split('-').map(Number)
+  const [year, setYear] = useState(todayY)
+  const [month, setMonth] = useState(todayM - 1) // 0-indexed
 
   // 작성된 날짜 Set (새벽 4시 기준 감사일)
   const writtenDays = new Set(notes.map((n) => n.gratitudeDate))
@@ -37,16 +39,13 @@ export function CalendarView({ notes }: CalendarViewProps) {
   }
 
   function nextMonth() {
-    const isAfterToday = year > today.getFullYear() ||
-      (year === today.getFullYear() && month >= today.getMonth())
+    const isAfterToday = year > todayY || (year === todayY && month >= todayM - 1)
     if (isAfterToday) return
     if (month === 11) { setYear(y => y + 1); setMonth(0) }
     else setMonth(m => m + 1)
   }
 
-  const isNextDisabled =
-    year > today.getFullYear() ||
-    (year === today.getFullYear() && month >= today.getMonth())
+  const isNextDisabled = year > todayY || (year === todayY && month >= todayM - 1)
 
   return (
     <div className="rounded-2xl bg-white p-5 shadow-sm">
@@ -95,10 +94,7 @@ export function CalendarView({ notes }: CalendarViewProps) {
           if (day === null) return <div key={`empty-${idx}`} />
 
           const dateKey = toDateKey(year, month, day)
-          const isToday =
-            day === today.getDate() &&
-            month === today.getMonth() &&
-            year === today.getFullYear()
+          const isToday = dateKey === todayGratitude
           const hasNote = writtenDays.has(dateKey)
           const col = idx % 7 // 0=일, 6=토
 
