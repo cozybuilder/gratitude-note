@@ -12,6 +12,7 @@ interface NoteFormData {
 
 interface NoteFormProps {
   onSubmit: (data: NoteFormData) => void
+  initialValues?: NoteFormData
   isSubmitting?: boolean
 }
 
@@ -21,9 +22,13 @@ const PLACEHOLDERS = [
   '마지막으로 하나 더 떠올려 보세요',
 ]
 
-export function NoteForm({ onSubmit, isSubmitting = false }: NoteFormProps) {
-  const [values, setValues] = useState({ gratitude1: '', gratitude2: '', gratitude3: '' })
-  const [mood, setMood] = useState<Mood>('good')
+export function NoteForm({ onSubmit, initialValues, isSubmitting = false }: NoteFormProps) {
+  const [values, setValues] = useState({
+    gratitude1: initialValues?.gratitude1 ?? '',
+    gratitude2: initialValues?.gratitude2 ?? '',
+    gratitude3: initialValues?.gratitude3 ?? '',
+  })
+  const [mood, setMood] = useState<Mood>(initialValues?.mood ?? 'good')
 
   const gratitudes = [
     { key: 'gratitude1', value: values.gratitude1 },
