@@ -1,14 +1,37 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Header } from '../components/layout/Header'
 import { NoteForm } from '../components/note/NoteForm'
 import { AiMessageCard } from '../components/note/AiMessageCard'
 import { useNotes } from '../hooks/useNotes'
 import { useStreak } from '../hooks/useStreak'
-import type { Mood } from '../types/note'
+import { HeroBanner } from '../components/note/HeroBanner'
+import type { Note, Mood } from '../types/note'
+
+const MOOD_LABEL: Record<string, string> = {
+  great: '😄 최고',
+  good: '🙂 좋음',
+  neutral: '😐 보통',
+  bad: '😔 나쁨',
+  terrible: '😢 힘듦',
+}
+
+function getTodayKey() {
+  return new Date().toISOString().slice(0, 10)
+}
+
+function findTodayNote(notes: Note[]): Note | undefined {
+  const today = getTodayKey()
+  return notes.find((n) => n.createdAt.slice(0, 10) === today)
+}
 
 export function HomePage() {
-  const { notes, addNote } = useNotes()
+  const { notes, addNote, editNote } = useNotes()
   const streak = useStreak(notes)
+  const navigate = useNavigate()
+
+  const todayNote = findTodayNote(notes)
+  const [isEditing, setIsEditing] = useState(false)
   const [aiMessage, setAiMessage] = useState<string | null>(null)
 
   function handleSubmit(data: {
@@ -17,41 +40,142 @@ export function HomePage() {
     gratitude3: string
     mood: Mood
   }) {
-    const note = addNote(data)
-    setAiMessage(note.aiMessage)
+    if (todayNote && isEditing) {
+      // 오늘 기록 수정
+      editNote(todayNote.id, data)
+      setIsEditing(false)
+    } else {
+      // 신규 저장
+      const note = addNote(data)
+      setAiMessage(note.aiMessage)
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
+
+  const today = new Date()
+  const dateStr = '☀️ ' + today.toLocaleDateString('ko-KR', {
+    month: 'long',
+    day: 'numeric',
+    weekday: 'long',
+  })
+
+  const gratitudes = todayNote
+    ? [todayNote.gratitude1, todayNote.gratitude2, todayNote.gratitude3].filter(
+        (g) => g.trim() !== ''
+      )
+    : []
+
+  // 오늘 기록이 있고 수정 모드가 아닌 경우 → 오늘 기록 카드 표시
+  const showTodayCard = !!todayNote && !isEditing
 
   return (
     <div className="flex flex-col">
       <Header title="오늘의 감사" streak={streak} />
 
-      <div className="flex flex-col gap-4 px-5 pb-28">
+      {/* Hero 배너 — 오늘 기록 없을 때만 표시 */}
+      {!todayNote && <HeroBanner />}
+
+      <div className="flex flex-col px-5 pb-28">
         {/* AI 응원 메시지 카드 */}
         {aiMessage && (
-          <AiMessageCard
-            message={aiMessage}
-            onClose={() => setAiMessage(null)}
-          />
+          <div className="mt-4">
+            <AiMessageCard
+              message={aiMessage}
+              onClose={() => setAiMessage(null)}
+            />
+          </div>
         )}
 
-        {/* 날짜 표시 */}
-        <p className="text-xs text-[#8a7570]">
-          {new Date().toLocaleDateString('ko-KR', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            weekday: 'short',
-          })}
-        </p>
+        {/* 날짜 */}
+        <div className="mb-4 mt-2">
+          <p className="text-sm font-medium text-[#3d2e26]">{dateStr}</p>
+          {!todayNote && (
+            <p className="mt-0.5 text-xs text-[#8a7570]">오늘도 감사로 하루를 시작해보세요</p>
+          )}
+        </div>
 
-        {/* 감사 입력 폼 */}
-        <section className="rounded-2xl bg-white p-5 shadow-sm">
-          <h2 className="mb-4 text-base font-semibold text-[#3d2e26]">
-            오늘 감사한 일 3가지
-          </h2>
-          <NoteForm onSubmit={handleSubmit} />
-        </section>
+        {showTodayCard ? (
+          /* ── 오늘 기록 카드 ── */
+          <section className="rounded-2xl bg-white p-5 shadow-sm">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-base font-semibold text-[#3d2e26]">오늘의 감사 기록</h2>
+              <span className="rounded-full bg-warm-100 px-2.5 py-0.5 text-xs text-[#3d2e26]">
+                {MOOD_LABEL[todayNote.mood]}
+              </span>
+            </div>
+
+            {/* 감사 항목 */}
+            <ul className="mb-4 flex flex-col gap-2">
+              {gratitudes.map((g, i) => (
+                <li key={i} className="flex items-start gap-2">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-warm-200 text-xs font-semibold text-primary-500">
+                    {i + 1}
+                  </span>
+                  <span className="text-sm leading-relaxed text-[#3d2e26]">{g}</span>
+                </li>
+              ))}
+            </ul>
+
+            {/* AI 응원 메시지 */}
+            {todayNote.aiMessage && (
+              <div className="mb-4 rounded-xl bg-warm-100 px-3 py-2.5">
+                <p className="text-xs leading-relaxed text-[#8a7570]">
+                  <span className="mr-1">✨</span>
+                  {todayNote.aiMessage}
+                </p>
+              </div>
+            )}
+
+            {/* 버튼 */}
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setIsEditing(true)}
+                className="flex-1 rounded-xl border border-warm-300 bg-warm-50 py-2.5 text-sm font-medium text-[#3d2e26] hover:bg-warm-100 transition-colors"
+              >
+                수정하기
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/list')}
+                className="flex-1 rounded-xl bg-primary-500 py-2.5 text-sm font-medium text-white hover:bg-primary-600 transition-colors"
+              >
+                기록 보기
+              </button>
+            </div>
+          </section>
+        ) : (
+          /* ── 작성 폼 ── */
+          <section className="rounded-2xl bg-white p-5 shadow-sm">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-base font-semibold text-[#3d2e26]">
+                {isEditing ? '오늘 기록 수정' : '오늘 감사한 일 3가지'}
+              </h2>
+              {isEditing && (
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(false)}
+                  className="text-xs text-[#8a7570] hover:text-primary-500 transition-colors"
+                >
+                  취소
+                </button>
+              )}
+            </div>
+            <NoteForm
+              onSubmit={handleSubmit}
+              initialValues={
+                isEditing && todayNote
+                  ? {
+                      gratitude1: todayNote.gratitude1,
+                      gratitude2: todayNote.gratitude2,
+                      gratitude3: todayNote.gratitude3,
+                      mood: todayNote.mood,
+                    }
+                  : undefined
+              }
+            />
+          </section>
+        )}
       </div>
     </div>
   )
