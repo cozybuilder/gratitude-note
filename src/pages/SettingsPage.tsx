@@ -233,7 +233,7 @@ export function SettingsPage() {
         </section>
 
         <p className="text-center text-xs leading-relaxed text-[#8a7570]">
-          감사노트는 서버 없이 기기에만 데이터를 저장합니다.{'\n'}
+          감사일기는 서버 없이 기기에만 데이터를 저장합니다.{'\n'}
           앱 삭제 또는 브라우저 데이터를 지우면 기록이 사라질 수 있습니다.
         </p>
       </div>

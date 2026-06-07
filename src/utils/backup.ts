@@ -80,7 +80,7 @@ export async function importBackup(file: File): Promise<ImportResult> {
     }
 
     if (!validateBackup(parsed)) {
-      return { ok: false, error: '올바른 감사노트 백업 파일이 아닙니다.' }
+      return { ok: false, error: '올바른 감사일기 백업 파일이 아닙니다.' }
     }
 
     clearAllNotes()

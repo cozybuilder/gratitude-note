@@ -54,8 +54,8 @@ export function ShareCardModal({ note, onClose }: ShareCardModalProps) {
     const blob = blobRef.current
     if (!blob) return
 
-    const file = new File([blob], `감사노트-${note.gratitudeDate}.png`, { type: 'image/png' })
-    const shareData = { files: [file], title: '감사노트', text: '오늘의 감사 일기를 공유합니다 🌿' }
+    const file = new File([blob], `감사일기-${note.gratitudeDate}.png`, { type: 'image/png' })
+    const shareData = { files: [file], title: '감사일기', text: '오늘의 감사 일기를 공유합니다 🌿' }
 
     if (navigator.canShare?.(shareData)) {
       // 파일 공유 지원 (모바일 브라우저)
@@ -77,7 +77,7 @@ export function ShareCardModal({ note, onClose }: ShareCardModalProps) {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `감사노트-${note.gratitudeDate}.png`
+    a.download = `감사일기-${note.gratitudeDate}.png`
     a.click()
     setTimeout(() => URL.revokeObjectURL(url), 1000)
   }

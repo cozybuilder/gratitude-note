@@ -11,8 +11,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'icons/*.png'],
       manifest: {
-        name: '감사노트',
-        short_name: '감사노트',
+        name: '감사일기',
+        short_name: '감사일기',
         description: '매일 3가지 감사한 일을 기록하는 감사 일기',
         theme_color: '#E07B4F',
         background_color: '#FFFDF9',

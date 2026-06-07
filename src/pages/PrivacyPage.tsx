@@ -23,14 +23,14 @@ export function PrivacyPage() {
 
         <section>
           <p className="text-sm leading-relaxed text-[#8a7570]">
-            감사노트(이하 "앱")는 사용자의 개인정보를 매우 중요하게 여기며,
+            감사일기(이하 "앱")는 사용자의 개인정보를 매우 중요하게 여기며,
             다음과 같이 개인정보처리방침을 안내합니다.
           </p>
         </section>
 
         <PolicySection title="1. 수집하는 개인정보 항목">
           <p>
-            감사노트는 회원가입, 로그인, 프로필 입력 등의 절차가 없습니다.
+            감사일기는 회원가입, 로그인, 프로필 입력 등의 절차가 없습니다.
             앱 이용을 위해 별도의 개인정보를 수집하거나 외부 서버로 전송하지 않습니다.
           </p>
         </PolicySection>
@@ -68,7 +68,7 @@ export function PrivacyPage() {
 
         <PolicySection title="5. 아동의 개인정보">
           <p>
-            감사노트는 만 14세 미만 아동을 대상으로 개인정보를 수집하지 않습니다.
+            감사일기는 만 14세 미만 아동을 대상으로 개인정보를 수집하지 않습니다.
           </p>
         </PolicySection>
 

@@ -149,7 +149,7 @@ export async function generateShareCard(note: Note): Promise<Blob> {
   ctx.fillStyle = C.orange
   ctx.font = `500 36px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
   ctx.letterSpacing = '2px'
-  ctx.fillText('감사노트', W / 2, CY + 82)
+  ctx.fillText('감사일기', W / 2, CY + 82)
   ctx.letterSpacing = '0px'
 
   // 브랜드 하단 짧은 강조선
@@ -287,7 +287,7 @@ export async function generateShareCard(note: Note): Promise<Blob> {
   // ── 15. CTA 메인 ─────────────────────────────────────────────────────────────
   ctx.fillStyle = C.orange
   ctx.font = `700 46px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
-  ctx.fillText('감사노트에서 나도 기록하기', W / 2, sepY + 112)
+  ctx.fillText('감사일기에서 나도 기록하기', W / 2, sepY + 112)
 
   // ── 16. URL ──────────────────────────────────────────────────────────────────
   ctx.fillStyle = C.warmMute
@@ -297,7 +297,7 @@ export async function generateShareCard(note: Note): Promise<Blob> {
   // ── 17. 해시태그 ─────────────────────────────────────────────────────────────
   ctx.fillStyle = C.orangeL
   ctx.font = `400 28px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
-  ctx.fillText('#감사노트   #감사일기', W / 2, sepY + 208)
+  ctx.fillText('#감사일기   #감사노트', W / 2, sepY + 208)
 
   // ── 반환 ──────────────────────────────────────────────────────────────────────
   return new Promise((resolve, reject) => {
