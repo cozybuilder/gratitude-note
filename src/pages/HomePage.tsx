@@ -4,6 +4,7 @@ import { Header } from '../components/layout/Header'
 import { NoteForm } from '../components/note/NoteForm'
 import { AiMessageCard } from '../components/note/AiMessageCard'
 import { ShareCardModal } from '../components/note/ShareCardModal'
+import { AdBanner } from '../components/ad/AdBanner'
 import { useNotes } from '../hooks/useNotes'
 import { useStreak } from '../hooks/useStreak'
 import { HeroBanner } from '../components/note/HeroBanner'
@@ -71,10 +72,15 @@ export function HomePage() {
     <div className="flex flex-col">
       <Header title="오늘의 감사" streak={streak} />
 
+      {/* 홈 하단 고정 배너 광고 (BottomNav 위) */}
+      <div className="fixed bottom-16 inset-x-0 z-30 mx-auto w-full max-w-md">
+        <AdBanner />
+      </div>
+
       {/* Hero 배너 — 오늘 기록 없을 때만 표시 */}
       {!todayNote && <HeroBanner />}
 
-      <div className="flex flex-col px-5 pb-28">
+      <div className="flex flex-col px-5 pb-36">
         {/* AI 응원 메시지 카드 */}
         {aiMessage && (
           <div className="mt-4">

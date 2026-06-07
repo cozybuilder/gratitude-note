@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* ── 다크모드: .dark 클래스 기반 variant 활성화 ─────────────────────────────── */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --animate-fade-in: fade-in 0.35s ease-out;
   --color-warm-50: #fffdf9;
@@ -40,3 +43,63 @@ body {
   display: flex;
   flex-direction: column;
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   다크 모드 — CSS 변수 및 전역 색상 오버라이드
+   html 요소에 .dark 클래스를 추가/제거해 전환합니다.
+   Tailwind @theme CSS 변수를 오버라이드하면 warm-* 유틸리티가
+   자동으로 따라옵니다. @layer 밖의 규칙은 유틸리티 레이어보다
+   우선하므로 !important 없이도 하드코딩된 색상을 덮어씁니다.
+   ══════════════════════════════════════════════════════════════════ */
+
+html.dark {
+  /* warm 팔레트 → 에스프레소 계열 다크 웜 */
+  --color-warm-50:  #1a110a;   /* 앱 배경 */
+  --color-warm-100: #241710;   /* 카드·섹션 배경 */
+  --color-warm-200: #3a2416;   /* 테두리·필 배경 */
+  --color-warm-300: #4e3020;   /* 강조 테두리 */
+
+  /* 프라이머리 오렌지는 다크에서도 선명하게 유지 */
+  --color-primary-400: #f0a07a;
+  --color-primary-500: #e88055;
+  --color-primary-600: #d06840;
+
+  color-scheme: dark;
+}
+
+/* body 배경 오버라이드 (index.css에 하드코딩된 값 재정의) */
+html.dark body {
+  background-color: #1a110a;
+}
+
+/* ── bg-white → 다크 카드 배경 ─────────────────────────────────── */
+html.dark [class~="bg-white"] {
+  background-color: #2e1e12;
+}
+
+/* ── 하드코딩 텍스트 색상 ────────────────────────────────────────── */
+html.dark [class~="text-[#3d2e26]"] {
+  color: #e8d5be;
+}
+html.dark [class~="text-[#8a7570]"] {
+  color: #a09080;
+}
+
+/* ── textarea / input placeholder ───────────────────────────────── */
+html.dark textarea::placeholder,
+html.dark input::placeholder {
+  color: #7a5a40;
+}
+
+/* ── textarea / input 배경 (bg-white 이미 처리되지만 명시적 보완) ─ */
+html.dark textarea,
+html.dark input[type="text"],
+html.dark input[type="email"] {
+  background-color: #2e1e12;
+  color: #e8d5be;
+  border-color: #4e3020;
+}
+
+/* ── 스크롤바 (선택) ─────────────────────────────────────────────── */
+html.dark ::-webkit-scrollbar-track { background: #1a110a; }
+html.dark ::-webkit-scrollbar-thumb { background: #4e3020; border-radius: 4px; }
