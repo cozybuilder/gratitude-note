@@ -26,21 +26,20 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
   }
 
   return (
-    <div className="flex min-h-svh flex-col bg-warm-50">
+    // 뷰포트 전체를 차지하는 fixed 컨테이너 — 부모 레이아웃 영향 없음
+    <div className="fixed inset-0 z-50">
 
-      {/* ── 이미지 영역 (flex-1 — 버튼 영역 제외한 전체) ─────────── */}
-      <div className="min-h-0 flex-1 w-full overflow-hidden">
-        <img
-          key={current}
-          src={slide.image}
-          alt=""
-          className="h-full w-full object-contain"
-          draggable={false}
-        />
-      </div>
+      {/* ── 전체화면 이미지 (뷰포트 100% cover) ─────────────────── */}
+      <img
+        key={current}
+        src={slide.image}
+        alt=""
+        className="absolute inset-0 h-full w-full object-cover"
+        draggable={false}
+      />
 
-      {/* ── 하단 버튼 영역 (전체 화면의 약 15~20%) ──────────────── */}
-      <div className="flex flex-col items-center gap-3 px-8 pb-10 pt-4">
+      {/* ── 버튼 / 인디케이터 오버레이 ──────────────────────────── */}
+      <div className="absolute bottom-8 left-0 right-0 z-10 flex flex-col items-center gap-3 px-6">
 
         {/* 점 인디케이터 */}
         <div className="flex gap-2 pb-1">
@@ -48,7 +47,7 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
             <div
               key={i}
               className={`h-2 rounded-full transition-all duration-300 ${
-                i === current ? 'w-6 bg-primary-500' : 'w-2 bg-warm-300'
+                i === current ? 'w-6 bg-primary-500' : 'w-2 bg-white/60'
               }`}
             />
           ))}
@@ -58,7 +57,7 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
         <button
           type="button"
           onClick={handleNext}
-          className="w-full rounded-2xl bg-primary-500 py-4 text-base font-semibold text-white shadow-md hover:bg-primary-600 active:scale-[0.98] transition-all"
+          className="w-full rounded-2xl bg-primary-500 py-4 text-base font-semibold text-white shadow-lg hover:bg-primary-600 active:scale-[0.98] transition-all"
         >
           {isLast ? '시작하기 🌿' : '다음'}
         </button>
@@ -68,12 +67,11 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
           <button
             type="button"
             onClick={onComplete}
-            className="py-1 text-sm text-[#8a7570] hover:text-primary-500 transition-colors"
+            className="py-1 text-sm text-white/80 hover:text-white transition-colors drop-shadow"
           >
             건너뛰기
           </button>
         ) : (
-          // 마지막 슬라이드 — 건너뛰기 공간 유지로 레이아웃 안정
           <div className="h-7" />
         )}
       </div>
