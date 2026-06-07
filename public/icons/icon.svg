@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- 배경 원 -->
+  <rect width="512" height="512" rx="112" fill="#E07B4F"/>
+  <!-- 노트북 본체 -->
+  <rect x="128" y="108" width="256" height="316" rx="20" fill="#FFFDF9"/>
+  <!-- 스프링 구멍 -->
+  <circle cx="256" cy="108" r="16" fill="#E07B4F"/>
+  <circle cx="200" cy="108" r="10" fill="#E07B4F"/>
+  <circle cx="312" cy="108" r="10" fill="#E07B4F"/>
+  <!-- 줄 1 -->
+  <rect x="164" y="176" width="184" height="12" rx="6" fill="#F5C4A8"/>
+  <!-- 줄 2 -->
+  <rect x="164" y="216" width="184" height="12" rx="6" fill="#F5C4A8"/>
+  <!-- 줄 3 (하이라이트) -->
+  <rect x="164" y="256" width="120" height="12" rx="6" fill="#E07B4F"/>
+  <!-- 하트 -->
+  <path d="M310 244 C310 244 296 232 286 242 C280 248 280 256 286 262 L310 284 L334 262 C340 256 340 248 334 242 C324 232 310 244 310 244Z" fill="#E07B4F"/>
+  <!-- 줄 4 -->
+  <rect x="164" y="296" width="184" height="12" rx="6" fill="#F5C4A8"/>
+  <!-- 줄 5 -->
+  <rect x="164" y="336" width="144" height="12" rx="6" fill="#F5C4A8"/>
+</svg>
