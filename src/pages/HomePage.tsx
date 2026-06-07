@@ -7,6 +7,7 @@ import { useNotes } from '../hooks/useNotes'
 import { useStreak } from '../hooks/useStreak'
 import { HeroBanner } from '../components/note/HeroBanner'
 import type { Note, Mood } from '../types/note'
+import { getTodayGratitudeDate } from '../utils/date'
 
 const MOOD_LABEL: Record<string, string> = {
   great: '😄 최고',
@@ -16,13 +17,9 @@ const MOOD_LABEL: Record<string, string> = {
   terrible: '😢 힘듦',
 }
 
-function getTodayKey() {
-  return new Date().toISOString().slice(0, 10)
-}
-
 function findTodayNote(notes: Note[]): Note | undefined {
-  const today = getTodayKey()
-  return notes.find((n) => n.createdAt.slice(0, 10) === today)
+  const today = getTodayGratitudeDate()
+  return notes.find((n) => n.gratitudeDate === today)
 }
 
 export function HomePage() {

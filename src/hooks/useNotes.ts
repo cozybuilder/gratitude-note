@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react'
 import type { Note, Mood } from '../types/note'
 import { getNotes, saveNote, updateNote, deleteNote, clearAllNotes } from '../utils/storage'
 import { generateAiMessage } from '../utils/ai'
+import { getGratitudeDate } from '../utils/date'
 
 function createId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
@@ -25,6 +26,7 @@ export function useNotes() {
         aiMessage,
         createdAt: now,
         updatedAt: now,
+        gratitudeDate: getGratitudeDate(),
       }
       saveNote(note)
       setNotes(getNotes())

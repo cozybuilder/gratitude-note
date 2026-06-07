@@ -9,4 +9,5 @@ export interface Note {
   aiMessage: string
   createdAt: string
   updatedAt: string
+  gratitudeDate: string  // 새벽 4시 기준 감사일 (YYYY-MM-DD)
 }

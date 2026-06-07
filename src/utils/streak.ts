@@ -1,8 +1,5 @@
 import type { Note } from '../types/note'
-
-function toDateString(iso: string): string {
-  return iso.slice(0, 10) // 'YYYY-MM-DD'
-}
+import { getTodayGratitudeDate } from './date'
 
 function getDaysBefore(dateStr: string, days: number): string {
   const d = new Date(dateStr)
@@ -13,8 +10,8 @@ function getDaysBefore(dateStr: string, days: number): string {
 export function calcStreak(notes: Note[]): number {
   if (notes.length === 0) return 0
 
-  const writtenDays = new Set(notes.map((n) => toDateString(n.createdAt)))
-  const today = new Date().toISOString().slice(0, 10)
+  const writtenDays = new Set(notes.map((n) => n.gratitudeDate))
+  const today = getTodayGratitudeDate()
 
   // 오늘 또는 어제부터 역산
   const startDay = writtenDays.has(today) ? today : getDaysBefore(today, 1)

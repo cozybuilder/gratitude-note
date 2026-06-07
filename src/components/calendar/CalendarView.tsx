@@ -16,8 +16,8 @@ export function CalendarView({ notes }: CalendarViewProps) {
   const [year, setYear] = useState(today.getFullYear())
   const [month, setMonth] = useState(today.getMonth()) // 0-indexed
 
-  // 작성된 날짜 Set
-  const writtenDays = new Set(notes.map((n) => n.createdAt.slice(0, 10)))
+  // 작성된 날짜 Set (새벽 4시 기준 감사일)
+  const writtenDays = new Set(notes.map((n) => n.gratitudeDate))
 
   // 이번 달 첫 날의 요일, 마지막 날
   const firstDayOfWeek = new Date(year, month, 1).getDay()

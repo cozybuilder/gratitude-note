@@ -59,6 +59,7 @@ export function SettingsPage() {
             <SettingsRow label="버전" value={APP_VERSION} />
             <SettingsRow label="저장 방식" value="기기 내 저장 (LocalStorage)" />
             <SettingsRow label="서버 연결" value="없음" />
+            <SettingsRow label="하루 기준" value="오전 4시 ~ 다음날 오전 3시 59분" />
           </div>
         </section>
 

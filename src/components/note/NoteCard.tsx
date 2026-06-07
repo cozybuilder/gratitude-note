@@ -58,7 +58,8 @@ export function NoteCard({ note, onEdit, onDelete }: NoteCardProps) {
     setIsEditing(false)
   }
 
-  const dateStr = new Date(note.createdAt).toLocaleDateString('ko-KR', {
+  const [gy, gm, gd] = note.gratitudeDate.split('-').map(Number)
+  const dateStr = new Date(gy, gm - 1, gd).toLocaleDateString('ko-KR', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',

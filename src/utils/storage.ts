@@ -1,11 +1,28 @@
 import type { Note } from '../types/note'
+import { getGratitudeDate } from './date'
 
 const STORAGE_KEY = 'gratitude_notes'
+
+/** gratitudeDate 없는 기존 데이터를 보완 */
+function migrate(notes: Note[]): Note[] {
+  return notes.map((n) =>
+    n.gratitudeDate
+      ? n
+      : { ...n, gratitudeDate: getGratitudeDate(new Date(n.createdAt)) }
+  )
+}
 
 export function getNotes(): Note[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? (JSON.parse(raw) as Note[]) : []
+    if (!raw) return []
+    const parsed = JSON.parse(raw) as Note[]
+    const migrated = migrate(parsed)
+    // 마이그레이션 결과가 바뀐 경우 즉시 저장
+    if (migrated.some((n, i) => n.gratitudeDate !== (parsed[i] as Note).gratitudeDate)) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated))
+    }
+    return migrated
   } catch {
     return []
   }
