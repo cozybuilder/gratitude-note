@@ -1,23 +1,11 @@
 import { useState } from 'react'
 
 // ── 슬라이드 데이터 ──────────────────────────────────────────────
-// 이미지: public/images/onboarding/ 에 저장된 PNG 파일을 사용합니다.
+// 이미지 자체가 완성형 화면이므로 별도 텍스트 없이 이미지만 사용합니다.
 const SLIDES = [
-  {
-    image: '/images/onboarding/onboarding-01.png',
-    title: '하루 3가지 감사',
-    desc: '작은 감사가 큰 행복을 만듭니다.',
-  },
-  {
-    image: '/images/onboarding/onboarding-02.png',
-    title: '따뜻한 응원',
-    desc: '기록한 감사의 순간을 바탕으로\n당신에게 힘이 되는 메시지를 전해드려요.',
-  },
-  {
-    image: '/images/onboarding/onboarding-03.png',
-    title: '작은 습관의 힘',
-    desc: '매일 3가지를 기록하며\n더 행복한 나를 만들어가요.',
-  },
+  { image: '/images/onboarding/onboarding-01.png' },
+  { image: '/images/onboarding/onboarding-02.png' },
+  { image: '/images/onboarding/onboarding-03.png' },
 ] as const
 
 interface OnboardingPageProps {
@@ -40,30 +28,22 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
   return (
     <div className="flex min-h-svh flex-col bg-warm-50">
 
-      {/* ── 이미지 영역 (화면 상단 55%) ──────────────────────────── */}
-      <div className="flex h-[55vh] w-full items-center justify-center overflow-hidden">
+      {/* ── 이미지 영역 (flex-1 — 버튼 영역 제외한 전체) ─────────── */}
+      <div className="min-h-0 flex-1 w-full overflow-hidden">
         <img
           key={current}
           src={slide.image}
-          alt={slide.title}
+          alt=""
           className="h-full w-full object-contain"
           draggable={false}
         />
       </div>
 
-      {/* ── 하단 콘텐츠 영역 ─────────────────────────────────────── */}
-      <div className="flex flex-1 flex-col items-center px-8 pb-14 pt-6">
-
-        {/* 제목 + 설명 */}
-        <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
-          <h1 className="text-2xl font-bold text-[#3d2e26]">{slide.title}</h1>
-          <p className="whitespace-pre-line text-base leading-relaxed text-[#8a7570]">
-            {slide.desc}
-          </p>
-        </div>
+      {/* ── 하단 버튼 영역 (전체 화면의 약 15~20%) ──────────────── */}
+      <div className="flex flex-col items-center gap-3 px-8 pb-10 pt-4">
 
         {/* 점 인디케이터 */}
-        <div className="mb-6 flex gap-2">
+        <div className="flex gap-2 pb-1">
           {SLIDES.map((_, i) => (
             <div
               key={i}
@@ -78,20 +58,23 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
         <button
           type="button"
           onClick={handleNext}
-          className="w-full max-w-xs rounded-2xl bg-primary-500 py-4 text-base font-semibold text-white shadow-md hover:bg-primary-600 active:scale-[0.98] transition-all"
+          className="w-full rounded-2xl bg-primary-500 py-4 text-base font-semibold text-white shadow-md hover:bg-primary-600 active:scale-[0.98] transition-all"
         >
           {isLast ? '시작하기 🌿' : '다음'}
         </button>
 
         {/* 건너뛰기 (마지막 슬라이드에서는 숨김) */}
-        {!isLast && (
+        {!isLast ? (
           <button
             type="button"
             onClick={onComplete}
-            className="mt-5 text-sm text-[#8a7570] hover:text-primary-500 transition-colors"
+            className="py-1 text-sm text-[#8a7570] hover:text-primary-500 transition-colors"
           >
             건너뛰기
           </button>
+        ) : (
+          // 마지막 슬라이드 — 건너뛰기 공간 유지로 레이아웃 안정
+          <div className="h-7" />
         )}
       </div>
     </div>
