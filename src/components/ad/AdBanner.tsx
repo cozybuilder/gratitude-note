@@ -1,21 +1,46 @@
 /**
  * AdBanner — 배너 광고 컴포넌트
  *
- * 현재는 플레이스홀더로 동작합니다.
- * 실제 광고 연동 시 아래 TODO를 참고하세요.
+ * 환경변수 설정 방법 (.env.local):
+ *   VITE_ADMOB_APP_ID=ca-pub-XXXXXXXXXXXXXXXX   ← Google AdSense Publisher ID
+ *   VITE_ADMOB_BANNER_ID=XXXXXXXXXX              ← Ad Unit ID (슬롯 ID)
  *
- * TODO (광고 연동):
- *   1. Google AdSense 스크립트를 index.html <head>에 추가
- *      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
- *   2. 아래 SHOW_AD_PLACEHOLDER를 false로 변경
- *   3. 주석 처리된 <ins> 태그의 data-ad-client / data-ad-slot 값을 실제 값으로 교체
+ * 두 값이 모두 설정된 경우 → 실제 AdSense 배너 렌더링
+ * 미설정 시 → "광고 영역" 플레이스홀더 표시
  */
 
-// 개발 환경 또는 광고 미연동 시 true
-const SHOW_AD_PLACEHOLDER = true
+import { useEffect } from 'react'
+
+const APP_ID = import.meta.env.VITE_ADMOB_APP_ID
+const BANNER_ID = import.meta.env.VITE_ADMOB_BANNER_ID
+const isAdConfigured = Boolean(APP_ID && BANNER_ID)
 
 export function AdBanner() {
-  if (SHOW_AD_PLACEHOLDER) {
+  useEffect(() => {
+    if (!isAdConfigured) return
+
+    // AdSense 스크립트 동적 주입 (중복 방지)
+    const SCRIPT_ATTR = 'data-admob-injected'
+    if (!document.querySelector(`script[${SCRIPT_ATTR}]`)) {
+      const script = document.createElement('script')
+      script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${APP_ID}`
+      script.async = true
+      script.crossOrigin = 'anonymous'
+      script.setAttribute(SCRIPT_ATTR, 'true')
+      document.head.appendChild(script)
+    }
+
+    // 광고 슬롯 초기화
+    try {
+      window.adsbygoogle = window.adsbygoogle ?? []
+      window.adsbygoogle.push({})
+    } catch {
+      // 초기화 실패 무시 (개발 환경 등)
+    }
+  }, [])
+
+  if (!isAdConfigured) {
+    // ── 플레이스홀더 (환경변수 미설정 시) ──────────────────────────
     return (
       <div className="flex h-[50px] w-full items-center justify-center border-t border-warm-200 bg-warm-100">
         <span className="text-xs text-[#8a7570]">광고 영역</span>
@@ -23,17 +48,15 @@ export function AdBanner() {
     )
   }
 
-  // ── 실제 AdSense 광고 (연동 시 활성화) ───────────────────────────
-  // return (
-  //   <div className="flex h-[50px] w-full items-center justify-center overflow-hidden">
-  //     <ins
-  //       className="adsbygoogle"
-  //       style={{ display: 'inline-block', width: '320px', height: '50px' }}
-  //       data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"  // TODO: 실제 publisher ID
-  //       data-ad-slot="XXXXXXXXXX"                  // TODO: 실제 ad unit ID
-  //     />
-  //   </div>
-  // )
-
-  return null
+  // ── 실제 AdSense 배너 ────────────────────────────────────────────
+  return (
+    <div className="flex w-full items-center justify-center overflow-hidden border-t border-warm-200 bg-warm-100">
+      <ins
+        className="adsbygoogle"
+        style={{ display: 'inline-block', width: '320px', height: '50px' }}
+        data-ad-client={APP_ID}
+        data-ad-slot={BANNER_ID}
+      />
+    </div>
+  )
 }

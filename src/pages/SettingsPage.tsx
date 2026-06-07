@@ -1,12 +1,14 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Header } from '../components/layout/Header'
 import { Modal } from '../components/common/Modal'
 import { useNotes } from '../hooks/useNotes'
 import { useTheme } from '../hooks/useTheme'
 import type { ThemeMode } from '../utils/theme'
+import { exportBackup, importBackup } from '../utils/backup'
+import type { ImportResult } from '../utils/backup'
 
-const APP_VERSION = '1.5.0'
+const APP_VERSION = '1.6.0'
 const CONTACT_EMAIL = 'cozybuilder.studio@gmail.com'
 
 // ── 테마 옵션 ─────────────────────────────────────────────────────
@@ -23,13 +25,43 @@ export function SettingsPage() {
 
   const [showResetModal, setShowResetModal] = useState(false)
   const [resetDone, setResetDone] = useState(false)
+  const [importResult, setImportResult] = useState<ImportResult | null>(null)
+  const [isImporting, setIsImporting] = useState(false)
+
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   function handleReset() {
     clearNotes()
-    // 설정값(테마)도 초기화 → 시스템 설정으로 복원
     setThemeMode('system')
     setShowResetModal(false)
     setResetDone(true)
+  }
+
+  function handleExport() {
+    exportBackup()
+  }
+
+  function handleImportClick() {
+    setImportResult(null)
+    fileInputRef.current?.click()
+  }
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    // input 초기화 (같은 파일 재선택 허용)
+    e.target.value = ''
+
+    setIsImporting(true)
+    setImportResult(null)
+    const result = await importBackup(file)
+    setImportResult(result)
+    setIsImporting(false)
+
+    if (result.ok) {
+      // 복원 완료 후 1.5초 뒤 리로드하여 notes 상태 갱신
+      setTimeout(() => window.location.reload(), 1500)
+    }
   }
 
   return (
@@ -62,11 +94,78 @@ export function SettingsPage() {
           </div>
         </section>
 
+        {/* ── 데이터 관리 (백업/복원) ────────────────────────────── */}
+        <section className="overflow-hidden rounded-2xl bg-white shadow-sm">
+          <SectionHeader label="데이터 관리" />
+          <div className="divide-y divide-warm-100">
+
+            {/* 백업 내보내기 */}
+            <button
+              type="button"
+              onClick={handleExport}
+              className="flex w-full items-center justify-between px-5 py-4 hover:bg-warm-50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-lg leading-none">📤</span>
+                <div className="text-left">
+                  <p className="text-sm font-medium text-[#3d2e26]">백업 내보내기</p>
+                  <p className="text-xs text-[#8a7570]">
+                    감사 기록 {notes.length}개를 JSON 파일로 저장합니다
+                  </p>
+                </div>
+              </div>
+              <span className="text-[#8a7570]">›</span>
+            </button>
+
+            {/* 백업 불러오기 */}
+            <button
+              type="button"
+              onClick={handleImportClick}
+              disabled={isImporting}
+              className="flex w-full items-center justify-between px-5 py-4 hover:bg-warm-50 transition-colors disabled:opacity-50"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-lg leading-none">📥</span>
+                <div className="text-left">
+                  <p className="text-sm font-medium text-[#3d2e26]">백업 불러오기</p>
+                  <p className="text-xs text-[#8a7570]">
+                    {isImporting ? '복원 중...' : 'JSON 파일을 선택해 기록을 복원합니다'}
+                  </p>
+                </div>
+              </div>
+              <span className="text-[#8a7570]">›</span>
+            </button>
+
+            {/* 숨겨진 파일 입력 */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="application/json,.json"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+          </div>
+        </section>
+
+        {/* 백업 불러오기 결과 */}
+        {importResult && (
+          <div className={`rounded-2xl px-5 py-3 ${
+            importResult.ok ? 'bg-warm-100' : 'bg-red-50'
+          }`}>
+            {importResult.ok ? (
+              <p className="text-sm text-[#8a7570]">
+                ✅ 감사 기록 {importResult.count}개가 복원되었습니다. 앱을 다시 불러오는 중…
+              </p>
+            ) : (
+              <p className="text-sm text-red-500">⚠️ {importResult.error}</p>
+            )}
+          </div>
+        )}
+
         {/* ── 정보 ───────────────────────────────────────────────── */}
         <section className="overflow-hidden rounded-2xl bg-white shadow-sm">
           <SectionHeader label="정보" />
           <div className="divide-y divide-warm-100">
-            {/* 개인정보처리방침 */}
             <button
               type="button"
               onClick={() => navigate('/privacy')}
@@ -79,7 +178,6 @@ export function SettingsPage() {
               <span className="text-[#8a7570]">›</span>
             </button>
 
-            {/* 문의하기 */}
             <a
               href={`mailto:${CONTACT_EMAIL}`}
               className="flex w-full items-center justify-between px-5 py-4 hover:bg-warm-50 transition-colors"
@@ -98,7 +196,7 @@ export function SettingsPage() {
 
         {/* ── 데이터 초기화 ──────────────────────────────────────── */}
         <section className="overflow-hidden rounded-2xl bg-white shadow-sm">
-          <SectionHeader label="데이터" />
+          <SectionHeader label="데이터 초기화" />
           <button
             type="button"
             onClick={() => { setResetDone(false); setShowResetModal(true) }}
@@ -117,14 +215,13 @@ export function SettingsPage() {
           </button>
         </section>
 
-        {/* 초기화 완료 안내 */}
         {resetDone && (
           <div className="rounded-2xl bg-warm-100 px-5 py-3">
             <p className="text-sm text-[#8a7570]">✅ 모든 데이터가 초기화되었습니다.</p>
           </div>
         )}
 
-        {/* ── 앱 버전 ───────────────────────────────────────────── */}
+        {/* ── 앱 정보 ───────────────────────────────────────────── */}
         <section className="overflow-hidden rounded-2xl bg-white shadow-sm">
           <SectionHeader label="앱 정보" />
           <div className="divide-y divide-warm-100">
@@ -135,14 +232,12 @@ export function SettingsPage() {
           </div>
         </section>
 
-        {/* 안내 문구 */}
         <p className="text-center text-xs leading-relaxed text-[#8a7570]">
           감사노트는 서버 없이 기기에만 데이터를 저장합니다.{'\n'}
           앱 삭제 또는 브라우저 데이터를 지우면 기록이 사라질 수 있습니다.
         </p>
       </div>
 
-      {/* 초기화 확인 모달 */}
       <Modal
         isOpen={showResetModal}
         title="정말 삭제하시겠습니까?"

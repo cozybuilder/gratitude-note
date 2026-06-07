@@ -49,3 +49,8 @@ export function deleteNote(id: string): void {
 export function clearAllNotes(): void {
   localStorage.removeItem(STORAGE_KEY)
 }
+
+/** 전체 노트 배열을 한 번에 저장합니다 (백업 복원 전용) */
+export function saveAllNotes(notes: Note[]): void {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(notes))
+}
