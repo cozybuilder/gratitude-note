@@ -108,6 +108,7 @@
 - DECISIONS.md 반영: Yes / No (사유: )
 - PROJECT_OVERVIEW.md 반영: Yes / No (사유: )
 - RELEASE_CHECKLIST.md 반영: Yes / No (사유: )
+- MEMORY.md 갱신: Yes / No (사유: )
 
 ### Git
 - 커밋: Yes / No (해시: )
