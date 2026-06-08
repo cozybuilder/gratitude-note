@@ -11,7 +11,7 @@ export interface BadgeInfo {
 /** 배지 목록 (낮은 조건 → 높은 조건 순) */
 export const BADGES: BadgeInfo[] = [
   { emoji: '🌱', label: '감사 새싹',   minStreak: 7   },
-  { emoji: '🌿', label: '감사 습관가', minStreak: 30  },
+  { emoji: '🍀', label: '감사 습관가', minStreak: 30  },
   { emoji: '🌳', label: '감사 성장가', minStreak: 60  },
   { emoji: '⭐', label: '감사 실천가', minStreak: 90  },
   { emoji: '🏆', label: '감사 마스터', minStreak: 180 },

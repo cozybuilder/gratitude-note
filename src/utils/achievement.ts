@@ -14,7 +14,7 @@ export interface AchievementBadge {
 
 export const ACHIEVEMENT_BADGES: AchievementBadge[] = [
   { id: 'sprout',   emoji: '🌱', label: '감사 새싹',   minStreak: 7,   isLegend: false },
-  { id: 'habit',    emoji: '🌿', label: '감사 습관가', minStreak: 30,  isLegend: false },
+  { id: 'habit',    emoji: '🍀', label: '감사 습관가', minStreak: 30,  isLegend: false },
   { id: 'growth',   emoji: '🌳', label: '감사 성장가', minStreak: 60,  isLegend: false },
   { id: 'practice', emoji: '⭐', label: '감사 실천가', minStreak: 90,  isLegend: false },
   { id: 'master',   emoji: '🏆', label: '감사 마스터', minStreak: 180, isLegend: false },

@@ -92,40 +92,42 @@ export function HomePage() {
           </div>
         )}
 
-        {/* 날짜 + 배지 현황 */}
-        <div className="mb-4 mt-2">
-          <p className="text-sm font-medium text-[#3d2e26]">{dateStr}</p>
+        {/* ── 날짜 + 현재 배지 (한 줄) ── */}
+        {(() => {
+          const current = getCurrentBadge(streak)
+          const next = getNextTargetBadge(streak)
+          const badgeLabel = current
+            ? `${current.emoji} ${current.label}`
+            : '🌰 감사 씨앗'
+          const isLegend = current?.isLegend ?? false
+          return (
+            <>
+              <div className="mb-3 mt-2 flex items-center justify-between">
+                <p className="text-sm font-medium text-[#3d2e26]">{dateStr}</p>
+                <p className={`text-sm font-semibold ${isLegend ? 'text-amber-600' : 'text-[#3d2e26]'}`}>
+                  {badgeLabel}
+                </p>
+              </div>
 
-          {/* 배지 현황 */}
-          {(() => {
-            const current = getCurrentBadge(streak)
-            const next = getNextTargetBadge(streak)
-            if (current?.isLegend) {
-              // 레전드
-              return (
-                <p className="mt-1 text-sm font-semibold text-amber-600">
-                  👑 감사 레전드
-                  <span className="ml-2 text-xs font-normal text-[#8a7570]">365일 연속 기록 보유</span>
-                </p>
-              )
-            }
-            return (
-              <>
-                <p className="mt-1 text-sm font-semibold text-[#3d2e26]">
-                  {current ? `${current.emoji} ${current.label}` : '🌱 감사 챌린저'}
-                </p>
-                {next && (
-                  <p className="mt-0.5 text-xs text-[#8a7570]">
-                    다음 배지 {next.emoji} {next.label}
-                    <span className="ml-2 font-semibold text-primary-500">
+              {/* 다음 배지 한 줄 카드 */}
+              {next && (
+                <div className="mb-4 rounded-xl bg-warm-100 px-4 py-2.5">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-[#8a7570]">
+                      다음 배지{' '}
+                      <span className="font-medium text-[#3d2e26]">
+                        {next.emoji} {next.label}
+                      </span>
+                    </p>
+                    <span className="text-xs font-semibold text-primary-500">
                       {next.minStreak - streak}일 남음
                     </span>
-                  </p>
-                )}
-              </>
-            )
-          })()}
-        </div>
+                  </div>
+                </div>
+              )}
+            </>
+          )
+        })()}
 
         {showTodayCard ? (
           /* ── 오늘 기록 카드 ── */
