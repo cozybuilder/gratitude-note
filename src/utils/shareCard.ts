@@ -218,34 +218,34 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
   // ─────────────────────────────────────────────────────────────────────────────
   // 6. 앱 아이콘 — 20~30% 확대(88→112px), 브랜드 로고 느낌
   // ─────────────────────────────────────────────────────────────────────────────
-  const ICON_SIZE = 112                // 기존 88 → 112 (+27%)
+  const ICON_SIZE = 144                // 기존 112 → 144 (+29%)
   const ICON_X = W / 2 - ICON_SIZE / 2
   const ICON_Y = CY + 44              // 카드 상단에서 44px
 
   if (iconImg) {
     ctx.save()
-    roundRectPath(ctx, ICON_X, ICON_Y, ICON_SIZE, ICON_SIZE, 24)
+    roundRectPath(ctx, ICON_X, ICON_Y, ICON_SIZE, ICON_SIZE, 28)
     ctx.clip()
     ctx.drawImage(iconImg, ICON_X, ICON_Y, ICON_SIZE, ICON_SIZE)
     ctx.restore()
 
-    roundRectPath(ctx, ICON_X, ICON_Y, ICON_SIZE, ICON_SIZE, 24)
+    roundRectPath(ctx, ICON_X, ICON_Y, ICON_SIZE, ICON_SIZE, 28)
     ctx.strokeStyle = 'rgba(224, 123, 79, 0.22)'
     ctx.lineWidth = 1.5
     ctx.stroke()
   }
 
   // ── 7. 메인 태그라인 — 1줄, 주홍색, 부드러운 슬로건 ────────────────────────
-  // 아이콘 하단(CY+44+112=CY+156)에서 48px gap → 기준선 CY+204
+  // 아이콘 하단(CY+44+144=CY+188)에서 48px gap → 기준선 CY+236
   ctx.textAlign = 'center'
   ctx.fillStyle = C.orange
   ctx.font = `500 42px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
-  ctx.fillText('하루 3개의 감사가 삶의 질을 바꿉니다', W / 2, CY + 204) // 2줄→1줄
+  ctx.fillText('하루 3개의 감사가 삶의 질을 바꿉니다', W / 2, CY + 236) // 기존 +204 → +236
 
   // ── 8. 장식 점 ───────────────────────────────────────────────────────────────
   ;[-20, 0, 20].forEach((dx) => {
     ctx.beginPath()
-    ctx.arc(W / 2 + dx, CY + 232, 4, 0, Math.PI * 2) // 기존 +266 → +232
+    ctx.arc(W / 2 + dx, CY + 264, 4, 0, Math.PI * 2) // 기존 +232 → +264
     ctx.fillStyle = 'rgba(224, 123, 79, 0.40)'
     ctx.fill()
   })
@@ -258,7 +258,7 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
   ctx.font = `400 34px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
   const dateW = ctx.measureText(dateStr).width + 64
   const pillX = (W - dateW) / 2
-  const pillY = CY + 252              // 기존 +288 → +252 (1줄 태그라인으로 36px 절감)
+  const pillY = CY + 284              // 기존 +252 → +284 (아이콘 +32px 반영)
 
   roundRectPath(ctx, pillX, pillY, dateW, 54, 27)
   ctx.fillStyle = 'rgba(224, 123, 79, 0.09)'
@@ -273,7 +273,7 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
   // ── 10. 섹션 헤더 ────────────────────────────────────────────────────────────
   ctx.fillStyle = C.warmMute
   ctx.font = `500 36px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
-  ctx.fillText('오늘 감사한 일 3가지', W / 2, CY + 370) // 기존 +396 → +370
+  ctx.fillText('오늘 감사한 일 3가지', W / 2, CY + 402) // 기존 +370 → +402
 
   // ─────────────────────────────────────────────────────────────────────────────
   // 감사 항목 — ROW_H=160, 폰트 36px, 최대 2줄 래핑
@@ -289,7 +289,7 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
   const LINE_H   = 44
 
   const gratitudes = [note.gratitude1, note.gratitude2, note.gratitude3]
-  let rowY = CY + 398                               // 기존 +424 → +398 (1줄 태그라인 절감)
+  let rowY = CY + 430                               // 기존 +398 → +430 (아이콘 +32px 반영)
 
   for (let i = 0; i < gratitudes.length; i++) {
     const g = gratitudes[i].trim()
