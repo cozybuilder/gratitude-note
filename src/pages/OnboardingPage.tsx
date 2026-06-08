@@ -26,54 +26,58 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
   }
 
   return (
-    // 뷰포트 전체를 차지하는 fixed 컨테이너 — 부모 레이아웃 영향 없음
-    <div className="fixed inset-0 z-50">
+    // 뷰포트 전체 fixed + cream 배경 — PC에서 모바일 프레임 밖 여백 표시
+    <div className="fixed inset-0 z-50 flex items-stretch justify-center bg-warm-50">
 
-      {/* ── 전체화면 이미지 (뷰포트 100% cover) ─────────────────── */}
-      <img
-        key={current}
-        src={slide.image}
-        alt=""
-        className="absolute inset-0 h-full w-full object-cover"
-        draggable={false}
-      />
+      {/* ── 모바일 프레임 (최대 430px, 이미지 배경색과 동일) ─────── */}
+      <div className="relative h-full w-full max-w-[430px] overflow-hidden bg-[#FFF9F5]">
 
-      {/* ── 버튼 / 인디케이터 오버레이 ──────────────────────────── */}
-      <div className="absolute bottom-8 left-0 right-0 z-10 flex flex-col items-center gap-3 px-6">
+        {/* ── 이미지: contain으로 전체가 잘리지 않게 표시 ─────────── */}
+        <img
+          key={current}
+          src={slide.image}
+          alt=""
+          className="absolute inset-0 h-full w-full object-contain"
+          draggable={false}
+        />
 
-        {/* 점 인디케이터 */}
-        <div className="flex gap-2 pb-1">
-          {SLIDES.map((_, i) => (
-            <div
-              key={i}
-              className={`h-2 rounded-full transition-all duration-300 ${
-                i === current ? 'w-6 bg-primary-500' : 'w-2 bg-white/60'
-              }`}
-            />
-          ))}
-        </div>
+        {/* ── 버튼 / 인디케이터 오버레이 ──────────────────────────── */}
+        <div className="absolute bottom-8 left-0 right-0 z-10 flex flex-col items-center gap-3 px-6">
 
-        {/* 다음 / 시작하기 버튼 */}
-        <button
-          type="button"
-          onClick={handleNext}
-          className="w-full rounded-2xl bg-primary-500 py-4 text-base font-semibold text-white shadow-lg hover:bg-primary-600 active:scale-[0.98] transition-all"
-        >
-          {isLast ? '시작하기 🌿' : '다음'}
-        </button>
+          {/* 점 인디케이터 */}
+          <div className="flex gap-2 pb-1">
+            {SLIDES.map((_, i) => (
+              <div
+                key={i}
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  i === current ? 'w-6 bg-primary-500' : 'w-2 bg-white/60'
+                }`}
+              />
+            ))}
+          </div>
 
-        {/* 건너뛰기 (마지막 슬라이드에서는 숨김) */}
-        {!isLast ? (
+          {/* 다음 / 시작하기 버튼 */}
           <button
             type="button"
-            onClick={onComplete}
-            className="py-1 text-sm text-white/80 hover:text-white transition-colors drop-shadow"
+            onClick={handleNext}
+            className="w-full rounded-2xl bg-primary-500 py-4 text-base font-semibold text-white shadow-lg hover:bg-primary-600 active:scale-[0.98] transition-all"
           >
-            건너뛰기
+            {isLast ? '시작하기 🌿' : '다음'}
           </button>
-        ) : (
-          <div className="h-7" />
-        )}
+
+          {/* 건너뛰기 (마지막 슬라이드에서는 숨김) */}
+          {!isLast ? (
+            <button
+              type="button"
+              onClick={onComplete}
+              className="py-1 text-sm text-white/80 hover:text-white transition-colors drop-shadow"
+            >
+              건너뛰기
+            </button>
+          ) : (
+            <div className="h-7" />
+          )}
+        </div>
       </div>
     </div>
   )
