@@ -96,40 +96,31 @@ export function HomePage() {
         <div className="mb-4 mt-2">
           <p className="text-sm font-medium text-[#3d2e26]">{dateStr}</p>
 
-          {/* 현재 배지 */}
+          {/* 배지 현황 */}
           {(() => {
             const current = getCurrentBadge(streak)
             const next = getNextTargetBadge(streak)
+            if (current?.isLegend) {
+              // 레전드
+              return (
+                <p className="mt-1 text-sm font-semibold text-amber-600">
+                  👑 감사 레전드
+                  <span className="ml-2 text-xs font-normal text-[#8a7570]">365일 연속 기록 보유</span>
+                </p>
+              )
+            }
             return (
               <>
-                {current ? (
-                  <>
-                    <p className={[
-                      'mt-1 text-sm font-semibold',
-                      current.isLegend ? 'text-amber-600' : 'text-[#3d2e26]',
-                    ].join(' ')}>
-                      {current.emoji} {current.label}
-                    </p>
-                    <p className="text-xs text-[#8a7570]">{streak}일 연속 기록 보유</p>
-                  </>
-                ) : (
-                  <p className="mt-1 text-xs text-[#8a7570]">
-                    🌱 감사 챌린저 · {streak > 0 ? `${streak}일 연속 기록 중` : '첫 감사를 작성해보세요'}
-                  </p>
-                )}
-
-                {/* 다음 배지 한 줄 */}
+                <p className="mt-1 text-sm font-semibold text-[#3d2e26]">
+                  {current ? `${current.emoji} ${current.label}` : '🌱 감사 챌린저'}
+                </p>
                 {next && (
-                  <p className="mt-1 text-xs text-[#8a7570]">
+                  <p className="mt-0.5 text-xs text-[#8a7570]">
                     다음 배지 {next.emoji} {next.label}
                     <span className="ml-2 font-semibold text-primary-500">
                       {next.minStreak - streak}일 남음
                     </span>
                   </p>
-                )}
-
-                {!todayNote && (
-                  <p className="mt-1 text-xs text-[#8a7570]">오늘도 감사로 하루를 시작해보세요</p>
                 )}
               </>
             )
