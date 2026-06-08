@@ -193,7 +193,7 @@ export function HomePage() {
                 {isEditing ? '오늘 기록 수정' : '오늘 감사한 일 3가지'}
               </h2>
               <div className="flex items-center gap-3">
-                <span className="text-xs text-[#c4b8b4]">공유카드 기준 최대 {GRATITUDE_MAX_CHARS}자</span>
+                <span className="text-xs text-[#c4b8b4]">최대 {GRATITUDE_MAX_CHARS}자</span>
                 {isEditing && (
                   <button
                     type="button"
