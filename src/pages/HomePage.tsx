@@ -5,11 +5,11 @@ import { NoteForm } from '../components/note/NoteForm'
 import { AiMessageCard } from '../components/note/AiMessageCard'
 import { ShareCardModal } from '../components/note/ShareCardModal'
 import { AdBanner } from '../components/ad/AdBanner'
-import { BadgeStatusCard } from '../components/badge/BadgeStatusCard'
 import { BadgeCelebrationModal } from '../components/badge/BadgeCelebrationModal'
 import { useNotes } from '../hooks/useNotes'
 import { useStreak } from '../hooks/useStreak'
 import { useAchievements } from '../hooks/useAchievements'
+import { getCurrentBadge, getNextTargetBadge } from '../utils/achievement'
 import { HeroBanner } from '../components/note/HeroBanner'
 import type { Note, Mood } from '../types/note'
 import { getTodayGratitudeDate } from '../utils/date'
@@ -92,17 +92,48 @@ export function HomePage() {
           </div>
         )}
 
-        {/* 날짜 */}
+        {/* 날짜 + 배지 현황 */}
         <div className="mb-4 mt-2">
           <p className="text-sm font-medium text-[#3d2e26]">{dateStr}</p>
-          {!todayNote && (
-            <p className="mt-0.5 text-xs text-[#8a7570]">오늘도 감사로 하루를 시작해보세요</p>
-          )}
-        </div>
 
-        {/* ── 배지 현황 카드 ── */}
-        <div className="mb-4">
-          <BadgeStatusCard streak={streak} />
+          {/* 현재 배지 */}
+          {(() => {
+            const current = getCurrentBadge(streak)
+            const next = getNextTargetBadge(streak)
+            return (
+              <>
+                {current ? (
+                  <>
+                    <p className={[
+                      'mt-1 text-sm font-semibold',
+                      current.isLegend ? 'text-amber-600' : 'text-[#3d2e26]',
+                    ].join(' ')}>
+                      {current.emoji} {current.label}
+                    </p>
+                    <p className="text-xs text-[#8a7570]">{streak}일 연속 기록 보유</p>
+                  </>
+                ) : (
+                  <p className="mt-1 text-xs text-[#8a7570]">
+                    🌱 감사 챌린저 · {streak > 0 ? `${streak}일 연속 기록 중` : '첫 감사를 작성해보세요'}
+                  </p>
+                )}
+
+                {/* 다음 배지 한 줄 */}
+                {next && (
+                  <p className="mt-1 text-xs text-[#8a7570]">
+                    다음 배지 {next.emoji} {next.label}
+                    <span className="ml-2 font-semibold text-primary-500">
+                      {next.minStreak - streak}일 남음
+                    </span>
+                  </p>
+                )}
+
+                {!todayNote && (
+                  <p className="mt-1 text-xs text-[#8a7570]">오늘도 감사로 하루를 시작해보세요</p>
+                )}
+              </>
+            )
+          })()}
         </div>
 
         {showTodayCard ? (
