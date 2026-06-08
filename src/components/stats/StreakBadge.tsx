@@ -1,4 +1,5 @@
 import { BADGES, getEarnedBadge, getNextBadge } from '../../utils/badge'
+import { getEarnedBadgeDetails } from '../../utils/achievement'
 
 interface StreakBadgeProps {
   streak: number
@@ -7,9 +8,20 @@ interface StreakBadgeProps {
 export function StreakBadge({ streak }: StreakBadgeProps) {
   const earned = getEarnedBadge(streak)
   const next = getNextBadge(streak)
+  const earnedDetails = getEarnedBadgeDetails()
+  const earnedIds = new Set(earnedDetails.map((d) => d.badge.id))
+
+  const isLegend = earned?.label === '감사 레전드'
 
   return (
-    <div className="rounded-2xl bg-white px-5 py-4 shadow-sm">
+    <div
+      className={[
+        'rounded-2xl px-5 py-4 shadow-sm',
+        isLegend
+          ? 'bg-gradient-to-br from-amber-50 to-yellow-100 border border-amber-200'
+          : 'bg-white',
+      ].join(' ')}
+    >
       <p className="mb-3 text-sm font-semibold text-[#3d2e26]">연속 작성 배지</p>
 
       {/* 현재 기록 + 획득 배지 */}
@@ -24,7 +36,10 @@ export function StreakBadge({ streak }: StreakBadgeProps) {
         <div className="flex flex-col gap-1">
           <p className="text-xs text-[#8a7570]">획득 배지</p>
           {earned ? (
-            <p className="text-base font-bold text-[#3d2e26]">
+            <p className={[
+              'text-base font-bold',
+              isLegend ? 'text-amber-600' : 'text-[#3d2e26]',
+            ].join(' ')}>
               {earned.emoji} {earned.label}
             </p>
           ) : (
@@ -51,21 +66,35 @@ export function StreakBadge({ streak }: StreakBadgeProps) {
         </div>
       )}
 
-      {/* 배지 진행 막대 */}
+      {isLegend && (
+        <div className="mb-3 rounded-xl bg-amber-100 border border-amber-200 px-3 py-2">
+          <p className="text-xs text-center text-amber-700 font-medium">
+            👑 명예의 전당 입성 완료!
+          </p>
+        </div>
+      )}
+
+      {/* 배지 진행 막대 (6단계) */}
       <div className="flex items-end justify-between gap-1">
-        {[...BADGES].reverse().map((badge) => {
+        {BADGES.map((badge) => {
           const achieved = streak >= badge.minStreak
+          const badgeIds = ['sprout', 'habit', 'growth', 'practice', 'master', 'legend']
+          const permanent = earnedIds.has(badgeIds[BADGES.indexOf(badge)])
           return (
             <div
               key={badge.label}
-              className={`flex flex-1 flex-col items-center gap-1 transition-opacity ${
-                achieved ? 'opacity-100' : 'opacity-25'
-              }`}
+              className={[
+                'flex flex-1 flex-col items-center gap-1 transition-opacity',
+                achieved ? 'opacity-100' : 'opacity-25',
+              ].join(' ')}
             >
               <span className="text-xl leading-none">{badge.emoji}</span>
-              <span className="text-[10px] leading-tight text-[#8a7570]">
+              <span className="text-[9px] leading-tight text-[#8a7570]">
                 {badge.minStreak}일
               </span>
+              {permanent && (
+                <span className="text-[8px] text-primary-400 font-semibold">✓</span>
+              )}
             </div>
           )
         })}

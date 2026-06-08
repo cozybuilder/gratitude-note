@@ -5,8 +5,11 @@ import { NoteForm } from '../components/note/NoteForm'
 import { AiMessageCard } from '../components/note/AiMessageCard'
 import { ShareCardModal } from '../components/note/ShareCardModal'
 import { AdBanner } from '../components/ad/AdBanner'
+import { BadgeStatusCard } from '../components/badge/BadgeStatusCard'
+import { BadgeCelebrationModal } from '../components/badge/BadgeCelebrationModal'
 import { useNotes } from '../hooks/useNotes'
 import { useStreak } from '../hooks/useStreak'
+import { useAchievements } from '../hooks/useAchievements'
 import { HeroBanner } from '../components/note/HeroBanner'
 import type { Note, Mood } from '../types/note'
 import { getTodayGratitudeDate } from '../utils/date'
@@ -27,6 +30,7 @@ function findTodayNote(notes: Note[]): Note | undefined {
 export function HomePage() {
   const { notes, addNote, editNote } = useNotes()
   const streak = useStreak(notes)
+  const { newBadge, clearNewBadge } = useAchievements(streak)
   const navigate = useNavigate()
 
   const todayNote = findTodayNote(notes)
@@ -41,11 +45,9 @@ export function HomePage() {
     mood: Mood
   }) {
     if (todayNote && isEditing) {
-      // 오늘 기록 수정
       editNote(todayNote.id, data)
       setIsEditing(false)
     } else {
-      // 신규 저장
       const note = addNote(data)
       setAiMessage(note.aiMessage)
     }
@@ -65,7 +67,6 @@ export function HomePage() {
       )
     : []
 
-  // 오늘 기록이 있고 수정 모드가 아닌 경우 → 오늘 기록 카드 표시
   const showTodayCard = !!todayNote && !isEditing
 
   return (
@@ -99,6 +100,11 @@ export function HomePage() {
           )}
         </div>
 
+        {/* ── 배지 현황 카드 ── */}
+        <div className="mb-4">
+          <BadgeStatusCard streak={streak} />
+        </div>
+
         {showTodayCard ? (
           /* ── 오늘 기록 카드 ── */
           <section className="rounded-2xl bg-white p-5 shadow-sm">
@@ -109,7 +115,6 @@ export function HomePage() {
               </span>
             </div>
 
-            {/* 감사 항목 */}
             <ul className="mb-4 flex flex-col gap-2">
               {gratitudes.map((g, i) => (
                 <li key={i} className="flex items-start gap-2">
@@ -121,7 +126,6 @@ export function HomePage() {
               ))}
             </ul>
 
-            {/* AI 응원 메시지 */}
             {todayNote.aiMessage && (
               <div className="mb-4 rounded-xl bg-warm-100 px-3 py-2.5">
                 <p className="text-xs leading-relaxed text-[#8a7570]">
@@ -131,7 +135,6 @@ export function HomePage() {
               </div>
             )}
 
-            {/* 버튼 */}
             <div className="flex gap-2">
               <button
                 type="button"
@@ -149,7 +152,6 @@ export function HomePage() {
               </button>
             </div>
 
-            {/* 공유 카드 만들기 */}
             <button
               type="button"
               onClick={() => setShowShareModal(true)}
@@ -196,6 +198,15 @@ export function HomePage() {
       {/* 공유 카드 모달 */}
       {showShareModal && todayNote && (
         <ShareCardModal note={todayNote} onClose={() => setShowShareModal(false)} />
+      )}
+
+      {/* 배지 획득 축하 모달 */}
+      {newBadge && (
+        <BadgeCelebrationModal
+          badge={newBadge}
+          streak={streak}
+          onClose={clearNewBadge}
+        />
       )}
     </div>
   )

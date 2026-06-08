@@ -7,6 +7,10 @@ import { useTheme } from '../hooks/useTheme'
 import type { ThemeMode } from '../utils/theme'
 import { exportBackup, importBackup } from '../utils/backup'
 import type { ImportResult } from '../utils/backup'
+import {
+  requestNotificationPermission,
+  getNotificationPermission,
+} from '../utils/notification'
 
 const APP_VERSION = '1.6.0'
 const CONTACT_EMAIL = 'cozybuilder.studio@gmail.com'
@@ -27,6 +31,9 @@ export function SettingsPage() {
   const [resetDone, setResetDone] = useState(false)
   const [importResult, setImportResult] = useState<ImportResult | null>(null)
   const [isImporting, setIsImporting] = useState(false)
+  const [notifPerm, setNotifPerm] = useState<ReturnType<typeof getNotificationPermission>>(
+    () => getNotificationPermission()
+  )
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -91,6 +98,46 @@ export function SettingsPage() {
                 </span>
               </button>
             ))}
+          </div>
+        </section>
+
+        {/* ── 알림 설정 ──────────────────────────────────────────── */}
+        <section className="overflow-hidden rounded-2xl bg-white shadow-sm">
+          <SectionHeader label="알림 설정" />
+          <div className="px-5 py-4">
+            <div className="mb-3 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-lg leading-none">🔔</span>
+                <div>
+                  <p className="text-sm font-medium text-[#3d2e26]">감사 리마인더</p>
+                  <p className="text-xs text-[#8a7570]">
+                    {notifPerm === 'granted'
+                      ? '18:00 / 22:00 — 미작성 시 알림 발송'
+                      : notifPerm === 'denied'
+                      ? '브라우저 설정에서 알림을 허용해주세요'
+                      : notifPerm === 'unsupported'
+                      ? '이 브라우저는 알림을 지원하지 않습니다'
+                      : '알림을 허용하면 매일 감사 리마인더를 받을 수 있습니다'}
+                  </p>
+                </div>
+              </div>
+              {notifPerm === 'granted' ? (
+                <span className="rounded-full bg-warm-100 px-2.5 py-0.5 text-xs font-medium text-primary-500">
+                  허용됨
+                </span>
+              ) : notifPerm === 'default' ? (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const perm = await requestNotificationPermission()
+                    setNotifPerm(perm)
+                  }}
+                  className="rounded-full bg-primary-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary-600 transition-colors"
+                >
+                  허용하기
+                </button>
+              ) : null}
+            </div>
           </div>
         </section>
 
