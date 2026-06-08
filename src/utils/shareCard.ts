@@ -48,14 +48,15 @@ interface ShareBadgeInfo {
 }
 
 function getBadgeForCard(streak: number): ShareBadgeInfo {
-  // 높은 조건부터 탐색
+  // 높은 조건부터 탐색 (ACHIEVEMENT_BADGES 는 7일부터 시작)
   const badge = [...ACHIEVEMENT_BADGES].reverse().find((b) => streak >= b.minStreak)
 
   if (!badge) {
+    // streak < 7 → 씨앗 단계 (배지 시스템과 동일한 시작 배지)
     return {
-      emoji: '🌱',
-      label: '감사 챌린저',
-      streakLine: `${streak}일 연속 감사 기록`,
+      emoji: '🌰',
+      label: '감사 씨앗',
+      streakLine: streak > 0 ? `${streak}일 연속 감사 기록` : '감사 여정을 시작했습니다',
       isLegend: false,
     }
   }
@@ -64,7 +65,7 @@ function getBadgeForCard(streak: number): ShareBadgeInfo {
     emoji: badge.emoji,
     label: badge.label,
     streakLine: badge.isLegend
-      ? `${streak}일 연속 · 명예의 전당 입장 자격 달성`
+      ? `${streak}일 연속 · 전설적인 기록 달성`
       : `${streak}일 연속 감사 기록`,
     isLegend: badge.isLegend,
   }
@@ -350,20 +351,15 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
   ctx.font = `400 30px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
   ctx.fillText(badgeInfo.streakLine, W / 2, sepY + 92)
 
-  // ── 15. CTA 메인 ─────────────────────────────────────────────────────────────
+  // ── 15. 감성 문구 ────────────────────────────────────────────────────────────
   ctx.fillStyle = C.orange
   ctx.font = `700 46px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
-  ctx.fillText('감사일기에서 나도 기록하기', W / 2, sepY + 112)
+  ctx.fillText('작은 감사가 행복을 만듭니다', W / 2, sepY + 148)
 
-  // ── 16. URL ──────────────────────────────────────────────────────────────────
+  // ── 16. URL (문구 아래 작게) ─────────────────────────────────────────────────
   ctx.fillStyle = C.warmMute
   ctx.font = `400 28px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
-  ctx.fillText(SERVICE_URL, W / 2, sepY + 162)
-
-  // ── 17. 해시태그 ─────────────────────────────────────────────────────────────
-  ctx.fillStyle = C.orangeL
-  ctx.font = `400 28px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
-  ctx.fillText('#감사일기   #오늘의감사   #감사습관', W / 2, sepY + 208)
+  ctx.fillText(SERVICE_URL, W / 2, sepY + 196)
 
   // ── 반환 ──────────────────────────────────────────────────────────────────────
   return new Promise((resolve, reject) => {
