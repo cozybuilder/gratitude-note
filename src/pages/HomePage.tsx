@@ -55,15 +55,17 @@ export function HomePage() {
   }
 
   const today = new Date()
-  const dateStr = '☀️ ' + today.toLocaleDateString('ko-KR', {
-    month: 'long',
-    day: 'numeric',
-    weekday: 'long',
-  })
+  const dateStr =
+    '☀️ ' +
+    today.toLocaleDateString('ko-KR', {
+      month: 'long',
+      day: 'numeric',
+      weekday: 'long',
+    })
 
   const gratitudes = todayNote
     ? [todayNote.gratitude1, todayNote.gratitude2, todayNote.gratitude3].filter(
-        (g) => g.trim() !== ''
+        (g) => g.trim() !== '',
       )
     : []
 
@@ -71,13 +73,14 @@ export function HomePage() {
 
   // 배지 정보
   const current = getCurrentBadge(streak)
-  const next    = getNextTargetBadge(streak)
+  const next = getNextTargetBadge(streak)
   const badgeLabel = current ? `${current.emoji} ${current.label}` : '🌰 감사 씨앗'
-  const isLegend   = current?.isLegend ?? false
+  const isLegend = current?.isLegend ?? false
 
   return (
     <div className="flex flex-col">
-      {/* ① 헤더 (제목 + 연속 기록) */}
+
+      {/* ① 헤더: 오늘의 감사 + 🔥 N일 연속 */}
       <Header title="오늘의 감사" streak={streak} />
 
       {/* 광고 — BottomNav 위 고정 */}
@@ -85,28 +88,30 @@ export function HomePage() {
         <AdBanner />
       </div>
 
-      {/* AI 응원 메시지 카드 */}
+      {/* AI 응원 메시지 (감사 저장 직후에만 일시 노출) */}
       {aiMessage && (
-        <div className="px-5 pt-1">
+        <div className="px-5 pt-2">
           <AiMessageCard message={aiMessage} onClose={() => setAiMessage(null)} />
         </div>
       )}
 
-      {/* ② 날짜 + 현재 배지 한 줄 */}
-      <div className="flex items-center justify-between px-5 pt-2 pb-3">
-        <p className="text-sm font-medium text-[#3d2e26]">{dateStr}</p>
-        <p className={`text-sm font-semibold ${isLegend ? 'text-amber-600' : 'text-[#3d2e26]'}`}>
-          {badgeLabel}
-        </p>
+      {/* ② Hero 배너 이미지 — 항상 표시, todayNote 여부 무관 */}
+      <div className="pt-2">
+        <HeroBanner />
       </div>
 
-      {/* ③ Hero 배너 — 항상 표시 */}
-      <HeroBanner />
-
-      {/* ④ 다음 배지 카드 + ⑤ 오늘 기록/작성 폼 */}
+      {/* ③④⑤ 날짜+배지 · 다음배지카드 · 감사폼/기록카드 */}
       <div className="flex flex-col gap-4 px-5 pb-36 pt-4">
 
-        {/* 다음 배지 한 줄 카드 */}
+        {/* ③ 날짜 + 현재 배지 한 줄 */}
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-medium text-[#3d2e26]">{dateStr}</p>
+          <p className={`text-sm font-semibold ${isLegend ? 'text-amber-600' : 'text-[#3d2e26]'}`}>
+            {badgeLabel}
+          </p>
+        </div>
+
+        {/* ④ 다음 배지 한 줄 카드 */}
         {next && (
           <div className="rounded-xl bg-warm-100 px-4 py-2.5">
             <div className="flex items-center justify-between">
@@ -123,6 +128,7 @@ export function HomePage() {
           </div>
         )}
 
+        {/* ⑤ 오늘 감사 기록 카드 또는 작성 폼 */}
         {showTodayCard ? (
           /* ⑤-A 오늘 기록 카드 */
           <section className="rounded-2xl bg-white p-5 shadow-sm">
@@ -157,14 +163,14 @@ export function HomePage() {
               <button
                 type="button"
                 onClick={() => setIsEditing(true)}
-                className="flex-1 rounded-xl border border-warm-300 bg-warm-50 py-2.5 text-sm font-medium text-[#3d2e26] hover:bg-warm-100 transition-colors"
+                className="flex-1 rounded-xl border border-warm-300 bg-warm-50 py-2.5 text-sm font-medium text-[#3d2e26] transition-colors hover:bg-warm-100"
               >
                 수정하기
               </button>
               <button
                 type="button"
                 onClick={() => navigate('/list')}
-                className="flex-1 rounded-xl bg-primary-500 py-2.5 text-sm font-medium text-white hover:bg-primary-600 transition-colors"
+                className="flex-1 rounded-xl bg-primary-500 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-600"
               >
                 기록 보기
               </button>
@@ -173,7 +179,7 @@ export function HomePage() {
             <button
               type="button"
               onClick={() => setShowShareModal(true)}
-              className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-primary-400 py-2.5 text-sm font-medium text-primary-500 hover:bg-primary-50 transition-colors"
+              className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-primary-400 py-2.5 text-sm font-medium text-primary-500 transition-colors hover:bg-primary-50"
             >
               <span>✨</span>
               공유 카드 만들기
@@ -190,7 +196,7 @@ export function HomePage() {
                 <button
                   type="button"
                   onClick={() => setIsEditing(false)}
-                  className="text-xs text-[#8a7570] hover:text-primary-500 transition-colors"
+                  className="text-xs text-[#8a7570] transition-colors hover:text-primary-500"
                 >
                   취소
                 </button>
