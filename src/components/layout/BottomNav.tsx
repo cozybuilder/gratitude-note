@@ -4,7 +4,7 @@ const tabs = [
   { to: '/',          label: '홈',    icon: HomeIcon },
   { to: '/list',      label: '기록',  icon: ListIcon },
   { to: '/calendar',  label: '캘린더', icon: CalendarIcon },
-  { to: '/stats',     label: '통계',  icon: StatsIcon },
+  { to: '/stats',     label: '집계',  icon: StatsIcon },
   { to: '/settings',  label: '설정',  icon: SettingsIcon },
 ] as const
 

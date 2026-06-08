@@ -27,7 +27,7 @@ export function StatsPage() {
             className="flex items-center gap-1 rounded-full bg-warm-100 px-3 py-1 hover:bg-warm-200 transition-colors"
           >
             <span className="text-base leading-none">🏅</span>
-            <span className="text-xs font-medium text-[#3d2e26]">배지</span>
+            <span className="text-xs font-medium text-[#3d2e26]">배지란?</span>
           </button>
         </div>
       </header>
