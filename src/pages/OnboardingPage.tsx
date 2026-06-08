@@ -26,27 +26,37 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
   }
 
   return (
-    // 뷰포트 전체 fixed + cream 배경 — PC에서 모바일 프레임 밖 여백 표시
-    <div className="fixed inset-0 z-50 flex items-stretch justify-center bg-[#2b1c13]">
+    /**
+     * 외부: fixed inset-0, 뷰포트 전체, bg-[#FFF9F5]
+     * 이미지보다 기기 화면이 세로로 더 길 때 남는 상하 여백을
+     * 이미지 배경색과 동일한 크림으로 채워 자연스럽게 처리.
+     */
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#FFF9F5]">
 
-      {/* ── 모바일 프레임 (최대 430px) ──────────────────────────── */}
-      <div className="relative h-full w-full max-w-[430px] overflow-hidden bg-[#FFF9F5]">
+      {/**
+       * 모바일 프레임
+       * - w-full / max-w-[430px]  : 좌우 최대 폭 제한
+       * - aspectRatio 941/1672    : 이미지 원본 비율 고정
+       *   → object-contain 이 컨테이너를 딱 맞게 채우므로 letterbox 없음
+       *   → 버튼이 항상 이미지 위에 overlay
+       * - maxHeight 100dvh        : 화면보다 긴 컨테이너 방지
+       * - overflow-hidden         : 안전 클립
+       */}
+      <div
+        className="relative w-full max-w-[430px] overflow-hidden"
+        style={{ aspectRatio: '941 / 1672', maxHeight: '100dvh' }}
+      >
 
-        {/* ── 이미지: cover로 화면 전체를 자연스럽게 채움 ──────────
-            9:16 이미지를 9:19~20 뷰포트에서 표시할 때
-            object-contain 을 사용하면 위아래에 크림 여백이 생겨
-            이미지가 버튼 위에 올라오지 않습니다.
-            object-cover 를 사용하면 좌우 ~4% 만 미세하게 크롭되며
-            세로(중요 콘텐츠)는 완전히 보존됩니다.          ─── */}
+        {/* 이미지: 잘림 없이 원본 전체 표시 */}
         <img
           key={current}
           src={slide.image}
           alt=""
-          className="absolute inset-0 h-full w-full object-cover object-center"
+          className="absolute inset-0 h-full w-full object-contain object-center"
           draggable={false}
         />
 
-        {/* ── 버튼 / 인디케이터 오버레이 (이미지 위에 표시) ───── */}
+        {/* 버튼 / 인디케이터 — 이미지 위 overlay */}
         <div className="absolute bottom-8 left-0 right-0 z-10 flex flex-col items-center gap-3 px-6">
 
           {/* 점 인디케이터 */}
