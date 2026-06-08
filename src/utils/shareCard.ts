@@ -363,7 +363,7 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
   // ── 17. 해시태그 ─────────────────────────────────────────────────────────────
   ctx.fillStyle = C.orangeL
   ctx.font = `400 28px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
-  ctx.fillText('#감사일기   #감사노트', W / 2, sepY + 208)
+  ctx.fillText('#감사일기   #오늘의감사   #감사습관', W / 2, sepY + 208)
 
   // ── 반환 ──────────────────────────────────────────────────────────────────────
   return new Promise((resolve, reject) => {

@@ -9,7 +9,7 @@ import { SettingsPage } from './pages/SettingsPage'
 import { OnboardingPage } from './pages/OnboardingPage'
 import { PrivacyPage } from './pages/PrivacyPage'
 import { BadgePage } from './pages/BadgePage'
-import { scheduleDailyReminders } from './utils/notification'
+import { scheduleDailyReminders, requestNotificationPermission, getNotificationPermission } from './utils/notification'
 
 const ONBOARDING_KEY = 'onboarding_done'
 
@@ -18,9 +18,17 @@ function App() {
     () => localStorage.getItem(ONBOARDING_KEY) === 'true'
   )
 
-  // 알림 권한이 이미 허용된 경우 매 실행 시 스케줄 등록
+  // 알림 초기화:
+  // - 권한 이미 허용된 경우 → 즉시 스케줄 등록
+  // - 권한 미결정(default) 상태 → 최초 1회 자동 권한 요청
   useEffect(() => {
-    scheduleDailyReminders()
+    const perm = getNotificationPermission()
+    if (perm === 'granted') {
+      scheduleDailyReminders()
+    } else if (perm === 'default') {
+      // 앱 첫 실행 또는 권한 미결정 → 자동 요청
+      requestNotificationPermission()
+    }
   }, [])
 
   if (!onboardingDone) {

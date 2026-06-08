@@ -10,6 +10,10 @@ import type { ImportResult } from '../utils/backup'
 import {
   requestNotificationPermission,
   getNotificationPermission,
+  get6pmEnabled,
+  get10pmEnabled,
+  set6pmEnabled,
+  set10pmEnabled,
 } from '../utils/notification'
 
 const APP_VERSION = '1.6.0'
@@ -34,6 +38,8 @@ export function SettingsPage() {
   const [notifPerm, setNotifPerm] = useState<ReturnType<typeof getNotificationPermission>>(
     () => getNotificationPermission()
   )
+  const [notif6pm,  setNotif6pm]  = useState(() => get6pmEnabled())
+  const [notif10pm, setNotif10pm] = useState(() => get10pmEnabled())
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -104,42 +110,88 @@ export function SettingsPage() {
         {/* ── 알림 설정 ──────────────────────────────────────────── */}
         <section className="overflow-hidden rounded-2xl bg-white shadow-sm">
           <SectionHeader label="알림 설정" />
-          <div className="px-5 py-4">
-            <div className="mb-3 flex items-center justify-between">
+
+          {/* 권한 상태 행 */}
+          <div className="flex items-center justify-between border-b border-warm-100 px-5 py-4">
+            <div className="flex items-center gap-3">
+              <span className="text-lg leading-none">🔔</span>
+              <div>
+                <p className="text-sm font-medium text-[#3d2e26]">감사 리마인더</p>
+                <p className="text-xs text-[#8a7570]">
+                  {notifPerm === 'granted'
+                    ? '미작성 시 아래 설정 시간에 알림을 발송합니다'
+                    : notifPerm === 'denied'
+                    ? '브라우저 설정에서 알림을 허용해주세요'
+                    : notifPerm === 'unsupported'
+                    ? '이 브라우저는 알림을 지원하지 않습니다'
+                    : '알림을 허용하면 매일 감사 리마인더를 받을 수 있습니다'}
+                </p>
+              </div>
+            </div>
+            {notifPerm === 'granted' ? (
+              <span className="rounded-full bg-warm-100 px-2.5 py-0.5 text-xs font-medium text-primary-500">
+                허용됨
+              </span>
+            ) : notifPerm === 'default' ? (
+              <button
+                type="button"
+                onClick={async () => {
+                  const perm = await requestNotificationPermission()
+                  setNotifPerm(perm)
+                }}
+                className="rounded-full bg-primary-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary-600 transition-colors"
+              >
+                허용하기
+              </button>
+            ) : null}
+          </div>
+
+          {/* 시간대별 체크박스 */}
+          <div className="divide-y divide-warm-100">
+            {/* 저녁 6시 알림 */}
+            <label className="flex cursor-pointer items-center justify-between px-5 py-4 hover:bg-warm-50 transition-colors">
               <div className="flex items-center gap-3">
-                <span className="text-lg leading-none">🔔</span>
+                <span className="text-lg leading-none">🌇</span>
                 <div>
-                  <p className="text-sm font-medium text-[#3d2e26]">감사 리마인더</p>
-                  <p className="text-xs text-[#8a7570]">
-                    {notifPerm === 'granted'
-                      ? '18:00 / 22:00 — 미작성 시 알림 발송'
-                      : notifPerm === 'denied'
-                      ? '브라우저 설정에서 알림을 허용해주세요'
-                      : notifPerm === 'unsupported'
-                      ? '이 브라우저는 알림을 지원하지 않습니다'
-                      : '알림을 허용하면 매일 감사 리마인더를 받을 수 있습니다'}
-                  </p>
+                  <p className="text-sm font-medium text-[#3d2e26]">저녁 6시 알림</p>
+                  <p className="text-xs text-[#8a7570]">오후 6:00 — 저녁 감사 리마인더</p>
                 </div>
               </div>
-              {notifPerm === 'granted' ? (
-                <span className="rounded-full bg-warm-100 px-2.5 py-0.5 text-xs font-medium text-primary-500">
-                  허용됨
-                </span>
-              ) : notifPerm === 'default' ? (
-                <button
-                  type="button"
-                  onClick={async () => {
-                    const perm = await requestNotificationPermission()
-                    setNotifPerm(perm)
-                  }}
-                  className="rounded-full bg-primary-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary-600 transition-colors"
-                >
-                  허용하기
-                </button>
-              ) : null}
-            </div>
+              <input
+                type="checkbox"
+                checked={notif6pm}
+                disabled={notifPerm !== 'granted'}
+                onChange={(e) => {
+                  setNotif6pm(e.target.checked)
+                  set6pmEnabled(e.target.checked)
+                }}
+                className="h-5 w-5 cursor-pointer accent-primary-500 disabled:cursor-not-allowed disabled:opacity-40"
+              />
+            </label>
+
+            {/* 저녁 10시 알림 */}
+            <label className="flex cursor-pointer items-center justify-between px-5 py-4 hover:bg-warm-50 transition-colors">
+              <div className="flex items-center gap-3">
+                <span className="text-lg leading-none">🌙</span>
+                <div>
+                  <p className="text-sm font-medium text-[#3d2e26]">저녁 10시 알림</p>
+                  <p className="text-xs text-[#8a7570]">오후 10:00 — 취침 전 감사 리마인더</p>
+                </div>
+              </div>
+              <input
+                type="checkbox"
+                checked={notif10pm}
+                disabled={notifPerm !== 'granted'}
+                onChange={(e) => {
+                  setNotif10pm(e.target.checked)
+                  set10pmEnabled(e.target.checked)
+                }}
+                className="h-5 w-5 cursor-pointer accent-primary-500 disabled:cursor-not-allowed disabled:opacity-40"
+              />
+            </label>
           </div>
-          <p className="px-5 pb-4 text-xs leading-relaxed text-[#8a7570]">
+
+          <p className="px-5 pb-4 pt-2 text-xs leading-relaxed text-[#8a7570]">
             ℹ️ 브라우저 정책에 따라 앱이 완전히 종료된 경우 알림이 제한될 수 있습니다.
           </p>
         </section>
