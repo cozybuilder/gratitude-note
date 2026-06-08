@@ -8,7 +8,7 @@ import { StatsPage } from './pages/StatsPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { OnboardingPage } from './pages/OnboardingPage'
 import { PrivacyPage } from './pages/PrivacyPage'
-import { HallOfFamePage } from './pages/HallOfFamePage'
+import { BadgePage } from './pages/BadgePage'
 import { scheduleDailyReminders } from './utils/notification'
 
 const ONBOARDING_KEY = 'onboarding_done'
@@ -47,7 +47,7 @@ function App() {
             <Route path="/stats"       element={<StatsPage />} />
             <Route path="/settings"    element={<SettingsPage />} />
             <Route path="/privacy"     element={<PrivacyPage />} />
-            <Route path="/hall-of-fame" element={<HallOfFamePage />} />
+            <Route path="/badges"       element={<BadgePage />} />
           </Routes>
         </main>
         <BottomNav />
