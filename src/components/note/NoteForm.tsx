@@ -16,6 +16,9 @@ interface NoteFormProps {
   isSubmitting?: boolean
 }
 
+// 공유카드 텍스트 영역(764px) 기준 — 36px 폰트 한글 2줄 안전 최대값
+export const GRATITUDE_MAX_CHARS = 40
+
 const PLACEHOLDERS = [
   '오늘 감사했던 일을 적어보세요',
   '또 다른 감사한 순간이 있었나요?',
@@ -41,7 +44,8 @@ export function NoteForm({ onSubmit, initialValues, isSubmitting = false }: Note
   )
 
   function handleChange(key: keyof typeof values, v: string) {
-    setValues((prev) => ({ ...prev, [key]: v }))
+    // 최대 글자 수 초과 시 잘라냄 — 붙여넣기 포함
+    setValues((prev) => ({ ...prev, [key]: v.slice(0, GRATITUDE_MAX_CHARS) }))
   }
 
   function handleSubmit() {
@@ -64,6 +68,7 @@ export function NoteForm({ onSubmit, initialValues, isSubmitting = false }: Note
               value={value}
               onChange={(e) => handleChange(key, e.target.value)}
               placeholder={PLACEHOLDERS[i]}
+              maxLength={GRATITUDE_MAX_CHARS}
               rows={2}
               className={[
                 'w-full resize-none rounded-xl border bg-white px-4 py-3 text-sm leading-relaxed text-[#3d2e26]',

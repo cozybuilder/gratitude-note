@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Header } from '../components/layout/Header'
-import { NoteForm } from '../components/note/NoteForm'
+import { NoteForm, GRATITUDE_MAX_CHARS } from '../components/note/NoteForm'
 import { AiMessageCard } from '../components/note/AiMessageCard'
 import { ShareCardModal } from '../components/note/ShareCardModal'
 import { AdBanner } from '../components/ad/AdBanner'
@@ -192,15 +192,18 @@ export function HomePage() {
               <h2 className="text-base font-semibold text-[#3d2e26]">
                 {isEditing ? '오늘 기록 수정' : '오늘 감사한 일 3가지'}
               </h2>
-              {isEditing && (
-                <button
-                  type="button"
-                  onClick={() => setIsEditing(false)}
-                  className="text-xs text-[#8a7570] transition-colors hover:text-primary-500"
-                >
-                  취소
-                </button>
-              )}
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-[#c4b8b4]">공유카드 기준 최대 {GRATITUDE_MAX_CHARS}자</span>
+                {isEditing && (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditing(false)}
+                    className="text-xs text-[#8a7570] transition-colors hover:text-primary-500"
+                  >
+                    취소
+                  </button>
+                )}
+              </div>
             </div>
             <NoteForm
               onSubmit={handleSubmit}
