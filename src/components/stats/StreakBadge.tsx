@@ -1,17 +1,26 @@
 import { BADGES, getEarnedBadge, getNextBadge } from '../../utils/badge'
-import { getEarnedBadgeDetails } from '../../utils/achievement'
+
+// 씨앗 단계 포함 전체 로드맵 (표시용)
+const ROADMAP = [
+  { emoji: '🌰', label: '감사 씨앗',  minStreak: 0 },
+  ...BADGES,
+]
 
 interface StreakBadgeProps {
   streak: number
 }
 
 export function StreakBadge({ streak }: StreakBadgeProps) {
-  const earned = getEarnedBadge(streak)
-  const next = getNextBadge(streak)
-  const earnedDetails = getEarnedBadgeDetails()
-  const earnedIds = new Set(earnedDetails.map((d) => d.badge.id))
-
+  const earned  = getEarnedBadge(streak)   // null if streak < 7
+  const next    = getNextBadge(streak)
   const isLegend = earned?.label === '감사 레전드'
+
+  // 현재 단계 index (로드맵 기준)
+  const currentIdx = earned
+    ? ROADMAP.findIndex((b) => b.label === earned.label)
+    : 0  // 씨앗 단계
+
+  const currentBadge = ROADMAP[currentIdx]
 
   return (
     <div
@@ -22,79 +31,72 @@ export function StreakBadge({ streak }: StreakBadgeProps) {
           : 'bg-white',
       ].join(' ')}
     >
-      <p className="mb-3 text-sm font-semibold text-[#3d2e26]">연속 작성 배지</p>
-
-      {/* 현재 기록 + 획득 배지 */}
-      <div className="mb-3 grid grid-cols-2 gap-3">
-        <div className="flex flex-col gap-1">
-          <p className="text-xs text-[#8a7570]">현재 연속 기록</p>
-          <p className="text-xl font-bold text-[#3d2e26]">
-            🔥 {streak}
-            <span className="ml-1 text-sm font-normal text-[#8a7570]">일</span>
-          </p>
-        </div>
-        <div className="flex flex-col gap-1">
-          <p className="text-xs text-[#8a7570]">획득 배지</p>
-          {earned ? (
-            <p className={[
-              'text-base font-bold',
-              isLegend ? 'text-amber-600' : 'text-[#3d2e26]',
-            ].join(' ')}>
-              {earned.emoji} {earned.label}
-            </p>
-          ) : (
-            <p className="text-sm text-[#8a7570]">아직 없음</p>
-          )}
-        </div>
+      {/* ── 현재 배지 + 연속 기록 ─────────────────────────────── */}
+      <div className="mb-3">
+        <p className={[
+          'text-base font-bold',
+          isLegend ? 'text-amber-600' : 'text-[#3d2e26]',
+        ].join(' ')}>
+          {currentBadge.emoji} {currentBadge.label}
+        </p>
+        <p className="mt-0.5 text-xs text-[#8a7570]">
+          현재 {streak}일 연속 기록 중
+        </p>
       </div>
 
-      {/* 다음 목표 안내 */}
+      {/* ── 다음 배지 ─────────────────────────────────────────── */}
       {next && (
-        <div className="mb-3 rounded-xl bg-warm-100 px-3 py-2">
-          <p className="text-xs text-[#8a7570]">
-            다음 배지:{' '}
-            <span className="font-medium text-[#3d2e26]">
-              {next.emoji} {next.label}
-            </span>
-            {' '}({next.minStreak}일 연속)
-            {streak > 0 && (
-              <span className="text-primary-500">
-                {' '}— {next.minStreak - streak}일 남았어요!
+        <div className="mb-4 rounded-xl bg-warm-100 px-3 py-2">
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-[#8a7570]">
+              다음 배지{' '}
+              <span className="font-medium text-[#3d2e26]">
+                {next.emoji} {next.label}
               </span>
-            )}
-          </p>
+            </p>
+            <span className="text-xs font-semibold text-primary-500">
+              {next.minStreak - streak}일 남음
+            </span>
+          </div>
         </div>
       )}
 
       {isLegend && (
-        <div className="mb-3 rounded-xl bg-amber-100 border border-amber-200 px-3 py-2">
+        <div className="mb-4 rounded-xl bg-amber-100 border border-amber-200 px-3 py-2">
           <p className="text-xs text-center text-amber-700 font-medium">
             👑 명예의 전당 입성 완료!
           </p>
         </div>
       )}
 
-      {/* 배지 진행 막대 (6단계) */}
-      <div className="flex items-end justify-between gap-1">
-        {BADGES.map((badge) => {
-          const achieved = streak >= badge.minStreak
-          const badgeIds = ['sprout', 'habit', 'growth', 'practice', 'master', 'legend']
-          const permanent = earnedIds.has(badgeIds[BADGES.indexOf(badge)])
+      {/* ── 배지 로드맵 한 줄 ─────────────────────────────────── */}
+      <div className="flex items-center justify-between gap-1">
+        {ROADMAP.map((badge, idx) => {
+          const isCurrent = idx === currentIdx
+          const isPast    = idx < currentIdx
+
           return (
             <div
               key={badge.label}
-              className={[
-                'flex flex-1 flex-col items-center gap-1 transition-opacity',
-                achieved ? 'opacity-100' : 'opacity-25',
-              ].join(' ')}
+              className="flex flex-1 flex-col items-center gap-0.5"
             >
-              <span className="text-xl leading-none">{badge.emoji}</span>
-              <span className="text-[9px] leading-tight text-[#8a7570]">
-                {badge.minStreak}일
+              {/* 이모지 */}
+              <span
+                className={[
+                  'leading-none transition-all',
+                  isCurrent ? 'text-2xl' : isPast ? 'text-base opacity-60' : 'text-base opacity-20',
+                ].join(' ')}
+              >
+                {badge.emoji}
               </span>
-              {permanent && (
-                <span className="text-[8px] text-primary-400 font-semibold">✓</span>
-              )}
+
+              {/* 현재 단계 강조 점 */}
+              <span
+                className={[
+                  'h-1 w-1 rounded-full',
+                  isCurrent ? 'bg-primary-500' : 'bg-transparent',
+                ].join(' ')}
+              />
             </div>
           )
         })}
