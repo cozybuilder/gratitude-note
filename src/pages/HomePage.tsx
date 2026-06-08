@@ -6,11 +6,11 @@ import { AiMessageCard } from '../components/note/AiMessageCard'
 import { ShareCardModal } from '../components/note/ShareCardModal'
 import { AdBanner } from '../components/ad/AdBanner'
 import { BadgeCelebrationModal } from '../components/badge/BadgeCelebrationModal'
+import { HeroBanner } from '../components/note/HeroBanner'
 import { useNotes } from '../hooks/useNotes'
 import { useStreak } from '../hooks/useStreak'
 import { useAchievements } from '../hooks/useAchievements'
 import { getCurrentBadge, getNextTargetBadge } from '../utils/achievement'
-import { HeroBanner } from '../components/note/HeroBanner'
 import type { Note, Mood } from '../types/note'
 import { getTodayGratitudeDate } from '../utils/date'
 
@@ -69,68 +69,62 @@ export function HomePage() {
 
   const showTodayCard = !!todayNote && !isEditing
 
+  // 배지 정보
+  const current = getCurrentBadge(streak)
+  const next    = getNextTargetBadge(streak)
+  const badgeLabel = current ? `${current.emoji} ${current.label}` : '🌰 감사 씨앗'
+  const isLegend   = current?.isLegend ?? false
+
   return (
     <div className="flex flex-col">
+      {/* ① 헤더 (제목 + 연속 기록) */}
       <Header title="오늘의 감사" streak={streak} />
 
-      {/* 홈 하단 고정 배너 광고 (BottomNav 위) */}
+      {/* 광고 — BottomNav 위 고정 */}
       <div className="fixed bottom-16 inset-x-0 z-30 mx-auto w-full max-w-md">
         <AdBanner />
       </div>
 
-      {/* Hero 배너 — 오늘 기록 없을 때만 표시 */}
-      {!todayNote && <HeroBanner />}
+      {/* AI 응원 메시지 카드 */}
+      {aiMessage && (
+        <div className="px-5 pt-1">
+          <AiMessageCard message={aiMessage} onClose={() => setAiMessage(null)} />
+        </div>
+      )}
 
-      <div className="flex flex-col px-5 pb-36">
-        {/* AI 응원 메시지 카드 */}
-        {aiMessage && (
-          <div className="mt-4">
-            <AiMessageCard
-              message={aiMessage}
-              onClose={() => setAiMessage(null)}
-            />
+      {/* ② 날짜 + 현재 배지 한 줄 */}
+      <div className="flex items-center justify-between px-5 pt-2 pb-3">
+        <p className="text-sm font-medium text-[#3d2e26]">{dateStr}</p>
+        <p className={`text-sm font-semibold ${isLegend ? 'text-amber-600' : 'text-[#3d2e26]'}`}>
+          {badgeLabel}
+        </p>
+      </div>
+
+      {/* ③ Hero 배너 — 항상 표시 */}
+      <HeroBanner />
+
+      {/* ④ 다음 배지 카드 + ⑤ 오늘 기록/작성 폼 */}
+      <div className="flex flex-col gap-4 px-5 pb-36 pt-4">
+
+        {/* 다음 배지 한 줄 카드 */}
+        {next && (
+          <div className="rounded-xl bg-warm-100 px-4 py-2.5">
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-[#8a7570]">
+                다음 배지{' '}
+                <span className="font-medium text-[#3d2e26]">
+                  {next.emoji} {next.label}
+                </span>
+              </p>
+              <span className="text-xs font-semibold text-primary-500">
+                {next.minStreak - streak}일 남음
+              </span>
+            </div>
           </div>
         )}
 
-        {/* ── 날짜 + 현재 배지 (한 줄) ── */}
-        {(() => {
-          const current = getCurrentBadge(streak)
-          const next = getNextTargetBadge(streak)
-          const badgeLabel = current
-            ? `${current.emoji} ${current.label}`
-            : '🌰 감사 씨앗'
-          const isLegend = current?.isLegend ?? false
-          return (
-            <>
-              <div className="mb-3 mt-2 flex items-center justify-between">
-                <p className="text-sm font-medium text-[#3d2e26]">{dateStr}</p>
-                <p className={`text-sm font-semibold ${isLegend ? 'text-amber-600' : 'text-[#3d2e26]'}`}>
-                  {badgeLabel}
-                </p>
-              </div>
-
-              {/* 다음 배지 한 줄 카드 */}
-              {next && (
-                <div className="mb-4 rounded-xl bg-warm-100 px-4 py-2.5">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs text-[#8a7570]">
-                      다음 배지{' '}
-                      <span className="font-medium text-[#3d2e26]">
-                        {next.emoji} {next.label}
-                      </span>
-                    </p>
-                    <span className="text-xs font-semibold text-primary-500">
-                      {next.minStreak - streak}일 남음
-                    </span>
-                  </div>
-                </div>
-              )}
-            </>
-          )
-        })()}
-
         {showTodayCard ? (
-          /* ── 오늘 기록 카드 ── */
+          /* ⑤-A 오늘 기록 카드 */
           <section className="rounded-2xl bg-white p-5 shadow-sm">
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-base font-semibold text-[#3d2e26]">오늘의 감사 기록</h2>
@@ -186,7 +180,7 @@ export function HomePage() {
             </button>
           </section>
         ) : (
-          /* ── 작성 폼 ── */
+          /* ⑤-B 작성 폼 */
           <section className="rounded-2xl bg-white p-5 shadow-sm">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-base font-semibold text-[#3d2e26]">
@@ -226,11 +220,7 @@ export function HomePage() {
 
       {/* 배지 획득 축하 모달 */}
       {newBadge && (
-        <BadgeCelebrationModal
-          badge={newBadge}
-          streak={streak}
-          onClose={clearNewBadge}
-        />
+        <BadgeCelebrationModal badge={newBadge} streak={streak} onClose={clearNewBadge} />
       )}
     </div>
   )
