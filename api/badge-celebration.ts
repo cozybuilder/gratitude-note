@@ -1,11 +1,25 @@
-// Vercel Serverless Function (Edge Runtime)
+// Vercel Serverless Function (Node.js Runtime)
 // 프론트엔드 → 이 함수 → OpenAI API 순서로 중계합니다.
 // OPENAI_API_KEY 는 Vercel 대시보드 환경변수에만 설정합니다.
 // 프론트엔드 번들에는 절대 포함되지 않습니다.
-
-export const config = { runtime: 'edge' }
+//
+// ※ Edge Runtime은 process 타입 미지원으로 Node.js Runtime 사용
 
 // ── 타입 ─────────────────────────────────────────────────────────
+// @vercel/node 미설치 → Vercel Node.js 함수 최소 인터페이스 직접 정의
+// (Vercel은 Express 호환 req/res를 제공합니다)
+
+interface Req {
+  method?: string
+  body?: unknown
+}
+
+interface Res {
+  status(code: number): Res
+  json(body: unknown): void
+  setHeader(name: string, value: string): Res
+  end(): void
+}
 
 interface BadgeCelebrationRequest {
   badgeId: string
@@ -26,45 +40,45 @@ const CORS_HEADERS: Record<string, string> = {
   'Access-Control-Allow-Headers': 'Content-Type',
 }
 
-function jsonResponse(body: unknown, status: number): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
-  })
+function setCors(res: Res): void {
+  for (const [key, value] of Object.entries(CORS_HEADERS)) {
+    res.setHeader(key, value)
+  }
 }
 
 // ── 핸들러 ───────────────────────────────────────────────────────
 
-export default async function handler(req: Request): Promise<Response> {
+export default async function handler(req: Req, res: Res): Promise<void> {
+  setCors(res)
+
   // Preflight (브라우저 CORS 사전 요청)
   if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: CORS_HEADERS })
+    res.status(204).end()
+    return
   }
 
   if (req.method !== 'POST') {
-    return jsonResponse({ error: 'Method not allowed' }, 405)
+    res.status(405).json({ error: 'Method not allowed' })
+    return
   }
 
-  // API 키 확인 (서버 환경변수)
+  // API 키 확인 (서버 환경변수 — Node.js Runtime에서 process.env 정상 동작)
   const apiKey = process.env.OPENAI_API_KEY
   if (!apiKey) {
-    return jsonResponse({ error: 'API key not configured' }, 500)
+    res.status(500).json({ error: 'API key not configured' })
+    return
   }
 
-  // 요청 바디 파싱
-  let body: BadgeCelebrationRequest
-  try {
-    body = (await req.json()) as BadgeCelebrationRequest
-  } catch {
-    return jsonResponse({ error: 'Invalid JSON' }, 400)
+  // 요청 바디 파싱 (Vercel Node.js 함수는 JSON body를 자동 파싱)
+  const body = req.body as BadgeCelebrationRequest
+
+  // 필수값 검증
+  if (!body?.badgeId || typeof body?.streak !== 'number') {
+    res.status(400).json({ error: 'Missing required fields: badgeId, streak' })
+    return
   }
 
   const { badgeId, badgeLabel, badgeEmoji, streak, sampleGratitudes } = body
-
-  // 필수값 검증
-  if (!badgeId || typeof streak !== 'number') {
-    return jsonResponse({ error: 'Missing required fields: badgeId, streak' }, 400)
-  }
 
   // 프롬프트 구성
   const gratitudeExamples =
@@ -106,7 +120,8 @@ export default async function handler(req: Request): Promise<Response> {
     })
 
     if (!openaiRes.ok) {
-      return jsonResponse({ error: 'OpenAI API error' }, 502)
+      res.status(502).json({ error: 'OpenAI API error' })
+      return
     }
 
     const data = (await openaiRes.json()) as {
@@ -115,11 +130,12 @@ export default async function handler(req: Request): Promise<Response> {
 
     const message = data.choices?.[0]?.message?.content?.trim()
     if (!message) {
-      return jsonResponse({ error: 'Empty response from AI' }, 502)
+      res.status(502).json({ error: 'Empty response from AI' })
+      return
     }
 
-    return jsonResponse({ message, source: 'ai' }, 200)
+    res.status(200).json({ message, source: 'ai' })
   } catch {
-    return jsonResponse({ error: 'Internal server error' }, 500)
+    res.status(500).json({ error: 'Internal server error' })
   }
 }
