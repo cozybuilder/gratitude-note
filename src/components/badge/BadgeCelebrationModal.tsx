@@ -5,9 +5,11 @@ interface Props {
   badge: AchievementBadge
   streak: number
   onClose: () => void
+  /** AI 특별 축하/회고 메시지. 없으면 기존 고정 문구만 표시. */
+  celebrationMessage?: string
 }
 
-export function BadgeCelebrationModal({ badge, streak, onClose }: Props) {
+export function BadgeCelebrationModal({ badge, streak, onClose, celebrationMessage }: Props) {
   // 스크롤 잠금
   useEffect(() => {
     document.body.style.overflow = 'hidden'
@@ -77,6 +79,30 @@ export function BadgeCelebrationModal({ badge, streak, onClose }: Props) {
             <p className="text-center text-sm leading-relaxed text-[#8a7570]">
               ✨ 꾸준한 감사의 습관이{'\n'}
               당신의 삶을 조금씩 바꾸고 있습니다.
+            </p>
+          </div>
+        )}
+
+        {/* AI 특별 축하/회고 메시지 */}
+        {celebrationMessage && (
+          <div
+            className={[
+              'mb-5 rounded-xl border px-4 py-3',
+              isLegend
+                ? 'border-amber-200 bg-amber-50'
+                : 'border-primary-100 bg-primary-50',
+            ].join(' ')}
+          >
+            <p className="mb-1 text-center text-[10px] font-medium uppercase tracking-widest text-[#c4b8b4]">
+              AI 회고 메시지
+            </p>
+            <p
+              className={[
+                'text-center text-sm leading-relaxed',
+                isLegend ? 'text-amber-700' : 'text-[#6b5b53]',
+              ].join(' ')}
+            >
+              {celebrationMessage}
             </p>
           </div>
         )}

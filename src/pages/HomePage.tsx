@@ -30,7 +30,7 @@ function findTodayNote(notes: Note[]): Note | undefined {
 export function HomePage() {
   const { notes, addNote, editNote } = useNotes()
   const streak = useStreak(notes)
-  const { newBadge, clearNewBadge } = useAchievements(streak)
+  const { newBadge, celebrationMessage, clearNewBadge } = useAchievements(streak, notes)
   const navigate = useNavigate()
 
   const todayNote = findTodayNote(notes)
@@ -229,7 +229,12 @@ export function HomePage() {
 
       {/* 배지 획득 축하 모달 */}
       {newBadge && (
-        <BadgeCelebrationModal badge={newBadge} streak={streak} onClose={clearNewBadge} />
+        <BadgeCelebrationModal
+          badge={newBadge}
+          streak={streak}
+          onClose={clearNewBadge}
+          celebrationMessage={celebrationMessage}
+        />
       )}
     </div>
   )

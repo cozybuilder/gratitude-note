@@ -25,6 +25,12 @@ export const ACHIEVEMENT_BADGES: AchievementBadge[] = [
 export interface Achievement {
   badgeId: string
   earnedAt: string // ISO 8601
+  /** 배지 획득 시 1회 생성된 AI 특별 축하/회고 메시지 */
+  celebrationMessage?: string
+  /** 메시지 생성에 사용된 감사 기록 수 */
+  analyzedNoteCount?: number
+  /** 이전 배지 획득 시각 (없으면 null) */
+  previousBadgeEarnedAt?: string | null
 }
 
 export function getAchievements(): Achievement[] {
@@ -40,11 +46,25 @@ function saveAchievements(achievements: Achievement[]): void {
   localStorage.setItem(ACHIEVEMENT_KEY, JSON.stringify(achievements))
 }
 
+/** 배지 획득 시 추가로 저장할 필드 (badgeId별) */
+export type AchievementExtras = Record<
+  string,
+  {
+    celebrationMessage?: string
+    analyzedNoteCount?: number
+    previousBadgeEarnedAt?: string | null
+  }
+>
+
 /**
  * 현재 streak 기준으로 새로 획득된 배지를 저장하고 반환합니다.
  * 이미 저장된 배지는 중복 저장하지 않습니다.
+ * extras: 배지 id별 추가 저장 데이터 (celebrationMessage 등). 선택 사항.
  */
-export function checkAndSaveNewAchievements(streak: number): AchievementBadge[] {
+export function checkAndSaveNewAchievements(
+  streak: number,
+  extras?: AchievementExtras
+): AchievementBadge[] {
   const existing = getAchievements()
   const existingIds = new Set(existing.map((a) => a.badgeId))
 
@@ -56,7 +76,11 @@ export function checkAndSaveNewAchievements(streak: number): AchievementBadge[] 
     const now = new Date().toISOString()
     saveAchievements([
       ...existing,
-      ...newBadges.map((b) => ({ badgeId: b.id, earnedAt: now })),
+      ...newBadges.map((b) => ({
+        badgeId: b.id,
+        earnedAt: now,
+        ...(extras?.[b.id] ?? {}),
+      })),
     ])
   }
 

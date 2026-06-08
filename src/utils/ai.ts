@@ -1,4 +1,5 @@
-import type { Mood } from '../types/note'
+import type { Mood, Note } from '../types/note'
+import type { AchievementBadge } from './achievement'
 
 const MESSAGE_POOL: Record<Mood, string[]> = {
   great: [
@@ -41,6 +42,74 @@ export function generateAiMessage(
   const firstGratitude = [gratitude1, gratitude2, gratitude3].find((g) => g.trim() !== '')
   if (firstGratitude && firstGratitude.length <= 20) {
     return `'${firstGratitude}'에 감사함을 느끼셨군요. ${base}`
+  }
+
+  return base
+}
+
+// ── 배지 획득 특별 축하/회고 메시지 ──────────────────────────────
+
+export interface BadgeCelebrationParams {
+  badge: AchievementBadge
+  streak: number
+  notesSinceLastBadge: Note[]
+}
+
+// 배지별 회고 메시지 풀 (2가지 변형)
+const BADGE_CELEBRATION_POOL: Record<string, string[]> = {
+  sprout: [
+    '일주일 동안 매일 감사함을 찾아내셨군요. 작은 습관 하나가 마음을 얼마나 따뜻하게 만드는지, 조금씩 느끼고 계시지 않나요? 처음 7일이 가장 어렵습니다. 그 고비를 넘기셨으니 앞으로의 여정이 더욱 기대됩니다. 🌱',
+    '7일간의 감사 기록이 쌓였습니다. 바쁜 일상 속에서도 잠시 멈춰 감사를 찾는 시간을 만들어 오셨군요. 그 조용한 노력이 당신의 마음 안에 씨앗을 심고 있어요. 앞으로도 이 아름다운 습관을 이어가 주세요. 🌿',
+  ],
+  habit: [
+    '한 달 동안 하루도 빠짐없이 감사를 기록해 오셨어요. 처음엔 어색했던 이 습관이 이제 자연스러운 일상이 되었을 거예요. 감사하는 눈으로 세상을 바라보는 것, 그것이 가장 큰 변화입니다. 30일의 여정을 정말 수고 많으셨어요. 🍀',
+    '30일이 지났습니다. 한 달 전의 당신과 지금의 당신, 분명히 무언가 달라졌을 거예요. 매일 세 가지 감사를 찾는 과정에서 작은 것들의 소중함이 더 크게 보이기 시작하셨나요? 이 습관이 앞으로도 오래오래 이어지길 바랍니다. ✨',
+  ],
+  growth: [
+    '두 달간의 감사 기록, 정말 대단합니다. 감사의 씨앗이 이제 제법 뿌리를 내리고 있어요. 어떤 날은 힘들었을 테고, 어떤 날은 그 힘든 날에도 감사할 것을 찾아내셨겠죠. 60일 동안 그 과정을 이어온 당신이 참 자랑스럽습니다. 🌳',
+    '60일째를 맞이하셨습니다. 감사를 기록하는 것이 처음엔 숙제처럼 느껴졌다면, 이제는 하루를 마무리하는 자연스러운 의식이 되었을 거예요. 그 변화가 작지 않습니다. 앞으로 남은 여정도 오늘처럼 꾸준히 이어가시길 응원합니다. 🌿',
+  ],
+  practice: [
+    '3개월, 90일간의 감사 실천을 완주하셨습니다. 90일이면 새로운 습관이 삶에 깊이 새겨진다고 해요. 이제 감사는 당신의 일부가 되었습니다. 스스로에게 충분히 박수를 보내 주세요. 정말 대단하십니다. ⭐',
+    '90일 동안 자신을 믿고 꾸준히 걸어오셨군요. 힘든 날도, 바쁜 날도, 기분이 좋지 않은 날도 있었겠지만 그 모든 날들을 기록으로 남기셨네요. 그 성실함이 당신 삶의 든든한 기반이 되고 있습니다. 앞으로도 함께 걸어가요. 🌟',
+  ],
+  master: [
+    '6개월, 180일의 감사 여정을 이어오셨습니다. 반년 동안 매일 감사를 찾는 삶을 사신 거예요. 이제 당신의 눈은 삶의 긍정적인 면을 더 자연스럽게 바라보고 있을 거라 믿습니다. 이 여정을 함께한 것이 정말 영광입니다. 🏆',
+    '180일. 그 숫자가 얼마나 대단한 것인지 아시나요? 많은 사람들이 꿈꾸지만 해내지 못하는 걸 당신은 해내셨습니다. 감사하는 마음이 이제 당신의 본성이 되었습니다. 남은 여정도 오늘처럼, 천천히 그리고 꾸준히. 🌿',
+  ],
+  legend: [
+    '1년, 365일. 당신은 해냈습니다. 365번의 하루를 감사로 채워오셨군요. 그 모든 날들이 모여 지금의 당신을 만들었습니다. 감사일기를 선택하고 이 길을 끝까지 걸어온 당신에게 온 마음으로 축하와 감사를 전합니다. 👑',
+    '365일간의 감사 기록이 완성되었습니다. 일 년 전 처음 감사일기를 시작할 때를 기억하시나요? 그때와 지금, 당신은 분명히 달라졌습니다. 감사를 통해 삶을 더 깊이 사랑하게 된 당신을 진심으로 축하드립니다. 이것은 끝이 아닌 새로운 시작입니다. 🌟',
+  ],
+}
+
+/**
+ * 배지 획득 시 1회 생성하는 특별 축하/회고 메시지.
+ * 이전 배지 이후 작성된 감사 기록을 참고해 개인화합니다.
+ * 외부 API 없이 로컬 템플릿 기반으로 동작합니다.
+ */
+export function generateBadgeCelebrationMessage(
+  params: BadgeCelebrationParams
+): string {
+  const { badge, notesSinceLastBadge } = params
+
+  const pool = BADGE_CELEBRATION_POOL[badge.id]
+  // 풀이 없는 경우 방어 처리 (미래 배지 추가 대비)
+  if (!pool || pool.length === 0) {
+    return `${badge.emoji} ${badge.label} 배지를 획득하셨습니다. 꾸준한 감사의 습관을 이어오신 당신을 진심으로 응원합니다.`
+  }
+
+  const base = pool[Math.floor(Math.random() * pool.length)]
+
+  // 감사 기록에서 짧고 의미 있는 내용 1개 추출 (15자 이하)
+  const gratitudeItems = notesSinceLastBadge
+    .flatMap((n) => [n.gratitude1, n.gratitude2, n.gratitude3])
+    .filter((g) => g.trim().length > 0 && g.trim().length <= 15)
+
+  if (gratitudeItems.length > 0) {
+    // 최근 기록 중 랜덤 선택
+    const pick = gratitudeItems[Math.floor(Math.random() * Math.min(gratitudeItems.length, 10))]
+    return `'${pick}' 같은 소중한 순간들을 기억하며 이 자리에 오셨군요. ${base}`
   }
 
   return base
