@@ -197,7 +197,7 @@ export function HomePage() {
 
       {/* 공유 카드 모달 */}
       {showShareModal && todayNote && (
-        <ShareCardModal note={todayNote} onClose={() => setShowShareModal(false)} />
+        <ShareCardModal note={todayNote} streak={streak} onClose={() => setShowShareModal(false)} />
       )}
 
       {/* 배지 획득 축하 모달 */}

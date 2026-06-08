@@ -1,4 +1,5 @@
 import type { Note, Mood } from '../types/note'
+import { ACHIEVEMENT_BADGES } from './achievement'
 
 // ─── 상수 ─────────────────────────────────────────────────────────────────────
 
@@ -26,13 +27,47 @@ const MOOD_META: Record<Mood, { emoji: string; label: string }> = {
 // ─── 색상 팔레트 ───────────────────────────────────────────────────────────────
 
 const C = {
-  orange:   '#E07B4F',
-  orangeL:  '#F2A07E',
-  warmDark: '#3d2e26',
-  warmMid:  '#6b4c3b',
-  warmMute: '#9a7b6e',
-  cardBg:   'rgba(255, 252, 245, 0.92)',
-  itemBg:   'rgba(255, 242, 228, 0.75)',
+  orange:     '#E07B4F',
+  orangeL:    '#F2A07E',
+  warmDark:   '#3d2e26',
+  warmMid:    '#6b4c3b',
+  warmMute:   '#9a7b6e',
+  cardBg:     'rgba(255, 252, 245, 0.92)',
+  itemBg:     'rgba(255, 242, 228, 0.75)',
+  gold:       '#B45309',
+  goldLight:  '#D97706',
+}
+
+// ─── 배지 헬퍼 ────────────────────────────────────────────────────────────────
+
+interface ShareBadgeInfo {
+  emoji: string
+  label: string
+  streakLine: string
+  isLegend: boolean
+}
+
+function getBadgeForCard(streak: number): ShareBadgeInfo {
+  // 높은 조건부터 탐색
+  const badge = [...ACHIEVEMENT_BADGES].reverse().find((b) => streak >= b.minStreak)
+
+  if (!badge) {
+    return {
+      emoji: '🌱',
+      label: '감사 챌린저',
+      streakLine: `${streak}일 연속 감사 기록`,
+      isLegend: false,
+    }
+  }
+
+  return {
+    emoji: badge.emoji,
+    label: badge.label,
+    streakLine: badge.isLegend
+      ? `${streak}일 연속 · 명예의 전당 입장 자격 달성`
+      : `${streak}일 연속 감사 기록`,
+    isLegend: badge.isLegend,
+  }
 }
 
 // ─── 헬퍼 ─────────────────────────────────────────────────────────────────────
@@ -84,7 +119,7 @@ function ellipsis(ctx: CanvasRenderingContext2D, text: string, maxWidth: number)
 
 // ─── 메인 생성 함수 ────────────────────────────────────────────────────────────
 
-export async function generateShareCard(note: Note): Promise<Blob> {
+export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
   const canvas = document.createElement('canvas')
   canvas.width = W
   canvas.height = H
@@ -279,10 +314,41 @@ export async function generateShareCard(note: Note): Promise<Blob> {
   ctx.stroke()
   ctx.setLineDash([])
 
-  // ── 14. 감성 문구 ─────────────────────────────────────────────────────────────
-  ctx.fillStyle = C.warmMute
-  ctx.font = `300 italic 33px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
-  ctx.fillText('작은 감사가 모여 행복한 하루를 만듭니다.', W / 2, sepY + 50)
+  // ── 14. 배지 정보 ─────────────────────────────────────────────────────────────
+  const badgeInfo = getBadgeForCard(streak)
+
+  // 레전드: 금색 배경 pill
+  if (badgeInfo.isLegend) {
+    const legendText = `${badgeInfo.emoji}  ${badgeInfo.label}`
+    ctx.font = `600 40px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
+    const lw = ctx.measureText(legendText).width + 72
+    const lx = (W - lw) / 2
+    const ly = sepY + 14
+
+    // 금색 pill 배경
+    roundRectPath(ctx, lx, ly, lw, 56, 28)
+    ctx.fillStyle = 'rgba(251, 191, 36, 0.20)'
+    ctx.fill()
+    roundRectPath(ctx, lx, ly, lw, 56, 28)
+    ctx.strokeStyle = 'rgba(180, 83, 9, 0.40)'
+    ctx.lineWidth = 1.5
+    ctx.stroke()
+
+    ctx.fillStyle = C.gold
+    ctx.textAlign = 'center'
+    ctx.fillText(legendText, W / 2, ly + 38)
+  } else {
+    // 일반 배지: 텍스트만
+    ctx.fillStyle = C.warmMid
+    ctx.font = `600 40px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
+    ctx.textAlign = 'center'
+    ctx.fillText(`${badgeInfo.emoji}  ${badgeInfo.label}`, W / 2, sepY + 48)
+  }
+
+  // 연속 기록 서브 텍스트
+  ctx.fillStyle = badgeInfo.isLegend ? C.goldLight : C.warmMute
+  ctx.font = `400 30px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
+  ctx.fillText(badgeInfo.streakLine, W / 2, sepY + 92)
 
   // ── 15. CTA 메인 ─────────────────────────────────────────────────────────────
   ctx.fillStyle = C.orange

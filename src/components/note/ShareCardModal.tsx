@@ -4,6 +4,7 @@ import { generateShareCard } from '../../utils/shareCard'
 
 interface ShareCardModalProps {
   note: Note
+  streak?: number
   onClose: () => void
 }
 
@@ -13,7 +14,7 @@ type ShareNotice = null | string
 
 const SERVICE_URL = 'https://gratitude-note-theta.vercel.app/'
 
-export function ShareCardModal({ note, onClose }: ShareCardModalProps) {
+export function ShareCardModal({ note, streak = 0, onClose }: ShareCardModalProps) {
   const [status, setStatus] = useState<Status>('generating')
   const [copyState, setCopyState] = useState<CopyState>('idle')
   const [shareNotice, setShareNotice] = useState<ShareNotice>(null)
@@ -30,7 +31,7 @@ export function ShareCardModal({ note, onClose }: ShareCardModalProps) {
   // 카드 생성
   useEffect(() => {
     let cancelled = false
-    generateShareCard(note)
+    generateShareCard(note, streak)
       .then((blob) => {
         if (cancelled) return
         blobRef.current = blob
@@ -46,7 +47,7 @@ export function ShareCardModal({ note, onClose }: ShareCardModalProps) {
       cancelled = true
       if (previewUrl.current) URL.revokeObjectURL(previewUrl.current)
     }
-  }, [note])
+  }, [note, streak])
 
   // ── 공유 액션 ─────────────────────────────────────────────────────────────────
 

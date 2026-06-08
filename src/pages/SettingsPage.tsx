@@ -139,6 +139,9 @@ export function SettingsPage() {
               ) : null}
             </div>
           </div>
+          <p className="px-5 pb-4 text-xs leading-relaxed text-[#8a7570]">
+            ℹ️ 브라우저 정책에 따라 앱이 완전히 종료된 경우 알림이 제한될 수 있습니다.
+          </p>
         </section>
 
         {/* ── 데이터 관리 (백업/복원) ────────────────────────────── */}
