@@ -126,21 +126,27 @@ interface BadgeCelebrationApiResponse {
   error?: string
 }
 
+/** generateBadgeCelebrationMessageWithApi 반환 타입 */
+export interface BadgeCelebrationResult {
+  message: string
+  source: 'ai' | 'local'
+}
+
 /**
  * 배지 획득 축하/회고 메시지를 생성합니다.
  *
- * - VITE_BADGE_AI_ENDPOINT 설정 시: Serverless Function → OpenAI API 경유
- * - 미설정 / 호출 실패 / 타임아웃(5초): 로컬 템플릿 fallback
+ * - VITE_BADGE_AI_ENDPOINT 설정 시: Serverless Function → OpenAI API 경유 → source: 'ai'
+ * - 미설정 / 호출 실패 / 타임아웃(5초): 로컬 템플릿 fallback → source: 'local'
  * - OPENAI_API_KEY 는 서버 환경변수에만 존재, 프론트 번들에 포함되지 않습니다.
  */
 export async function generateBadgeCelebrationMessageWithApi(
   params: BadgeCelebrationParams
-): Promise<string> {
+): Promise<BadgeCelebrationResult> {
   const endpoint = import.meta.env.VITE_BADGE_AI_ENDPOINT
 
   // endpoint 미설정 → 즉시 로컬 fallback
   if (!endpoint || !endpoint.trim()) {
-    return generateBadgeCelebrationMessage(params)
+    return { message: generateBadgeCelebrationMessage(params), source: 'local' }
   }
 
   const { badge, streak, notesSinceLastBadge } = params
@@ -173,17 +179,17 @@ export async function generateBadgeCelebrationMessageWithApi(
     clearTimeout(timeoutId)
 
     if (!res.ok) {
-      return generateBadgeCelebrationMessage(params)
+      return { message: generateBadgeCelebrationMessage(params), source: 'local' }
     }
 
     const data = (await res.json()) as BadgeCelebrationApiResponse
     if (typeof data.message === 'string' && data.message.trim()) {
-      return data.message.trim()
+      return { message: data.message.trim(), source: 'ai' }
     }
 
-    return generateBadgeCelebrationMessage(params)
+    return { message: generateBadgeCelebrationMessage(params), source: 'local' }
   } catch {
     clearTimeout(timeoutId)
-    return generateBadgeCelebrationMessage(params)
+    return { message: generateBadgeCelebrationMessage(params), source: 'local' }
   }
 }

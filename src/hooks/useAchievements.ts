@@ -63,7 +63,7 @@ export function useAchievements(streak: number, notes: Note[]) {
           // (모달 표시는 최고 배지 1개만. 하위 배지도 나중에 BadgePage 등에서 활용 가능)
           const extras: AchievementExtras = {}
           for (const b of willGain) {
-            const celebrationMessage = await generateBadgeCelebrationMessageWithApi({
+            const { message: celebrationMessage, source } = await generateBadgeCelebrationMessageWithApi({
               badge: b,
               streak,
               notesSinceLastBadge,
@@ -72,6 +72,7 @@ export function useAchievements(streak: number, notes: Note[]) {
               celebrationMessage,
               analyzedNoteCount: notesSinceLastBadge.length,
               previousBadgeEarnedAt,
+              source,
             }
           }
 

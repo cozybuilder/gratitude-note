@@ -31,6 +31,8 @@ export interface Achievement {
   analyzedNoteCount?: number
   /** 이전 배지 획득 시각 (없으면 null) */
   previousBadgeEarnedAt?: string | null
+  /** 메시지 출처: AI API 성공 시 'ai', 로컬 fallback 사용 시 'local' */
+  source?: 'ai' | 'local'
 }
 
 export function getAchievements(): Achievement[] {
@@ -53,6 +55,7 @@ export type AchievementExtras = Record<
     celebrationMessage?: string
     analyzedNoteCount?: number
     previousBadgeEarnedAt?: string | null
+    source?: 'ai' | 'local'
   }
 >
 
