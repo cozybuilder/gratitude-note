@@ -116,7 +116,7 @@ export function SettingsPage() {
             <div className="flex items-center gap-3">
               <span className="text-lg leading-none">🔔</span>
               <div>
-                <p className="text-sm font-medium text-[#3d2e26]">감사 리마인더</p>
+                <p className="text-sm font-medium text-[#3d2e26]">감사일기 리마인더</p>
                 <p className="text-xs text-[#8a7570]">
                   {notifPerm === 'granted'
                     ? '미작성 시 아래 설정 시간에 알림을 발송합니다'
