@@ -6,7 +6,7 @@ import {
   type AchievementBadge,
   type AchievementExtras,
 } from '../utils/achievement'
-import { generateBadgeCelebrationMessage } from '../utils/ai'
+import { generateBadgeCelebrationMessageWithApi } from '../utils/ai'
 import type { Note } from '../types/note'
 
 /**
@@ -53,32 +53,44 @@ export function useAchievements(streak: number, notes: Note[]) {
           ? notes.filter((n) => n.createdAt > previousBadgeEarnedAt)
           : [...notes]
 
-        // extras 구성 — 신규 획득한 모든 배지에 각각 메시지 생성 후 저장
-        // (모달 표시는 최고 배지 1개만. 하위 배지도 나중에 BadgePage 등에서 활용 가능)
-        const extras: AchievementExtras = {}
-        for (const b of willGain) {
-          extras[b.id] = {
-            celebrationMessage: generateBadgeCelebrationMessage({
+        // ── v1.7.1: AI API 비동기 호출 후 extras 저장 ──────────────
+        // cancelled 플래그: 컴포넌트 언마운트 시 setState 방지
+        let cancelled = false
+
+        const resolveAndSave = async () => {
+          // extras 구성 — 신규 획득한 모든 배지에 각각 메시지 생성 후 저장
+          // API 성공 시 AI 메시지, 실패/미설정 시 로컬 템플릿 fallback
+          // (모달 표시는 최고 배지 1개만. 하위 배지도 나중에 BadgePage 등에서 활용 가능)
+          const extras: AchievementExtras = {}
+          for (const b of willGain) {
+            const celebrationMessage = await generateBadgeCelebrationMessageWithApi({
               badge: b,
               streak,
               notesSinceLastBadge,
-            }),
-            analyzedNoteCount: notesSinceLastBadge.length,
-            previousBadgeEarnedAt,
+            })
+            extras[b.id] = {
+              celebrationMessage,
+              analyzedNoteCount: notesSinceLastBadge.length,
+              previousBadgeEarnedAt,
+            }
           }
-        }
 
-        // 모달 표시용 — 최고 배지의 메시지 별도 참조
-        const msg = extras[badge.id]?.celebrationMessage ?? ''
+          if (cancelled) return
 
-        // 배지 저장 (extras 포함 — 1회만 저장, 중복 저장 방지는 내부에서 처리)
-        checkAndSaveNewAchievements(streak, extras)
+          // 모달 표시용 — 최고 배지의 메시지 별도 참조
+          const msg = extras[badge.id]?.celebrationMessage ?? ''
 
-        // setTimeout으로 비동기 처리 — effect 내부 동기 setState 규칙 준수
-        setTimeout(() => {
+          // 배지 저장 (extras 포함 — 1회만 저장, 중복 저장 방지는 내부에서 처리)
+          checkAndSaveNewAchievements(streak, extras)
+
           setNewBadge(badge)
           setCelebrationMessage(msg)
-        }, 0)
+        }
+
+        resolveAndSave()
+
+        // cleanup: 언마운트 시 setState 호출 방지
+        return () => { cancelled = true }
       }
     }
 

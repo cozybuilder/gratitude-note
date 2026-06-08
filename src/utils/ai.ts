@@ -87,6 +87,7 @@ const BADGE_CELEBRATION_POOL: Record<string, string[]> = {
  * 배지 획득 시 1회 생성하는 특별 축하/회고 메시지.
  * 이전 배지 이후 작성된 감사 기록을 참고해 개인화합니다.
  * 외부 API 없이 로컬 템플릿 기반으로 동작합니다.
+ * v1.7.1: generateBadgeCelebrationMessageWithApi 의 fallback으로 사용됩니다.
  */
 export function generateBadgeCelebrationMessage(
   params: BadgeCelebrationParams
@@ -113,4 +114,76 @@ export function generateBadgeCelebrationMessage(
   }
 
   return base
+}
+
+// ── v1.7.1: Serverless Function 경유 AI 메시지 생성 ──────────────
+// VITE_BADGE_AI_ENDPOINT 가 설정된 경우 API 호출 시도.
+// 미설정이거나 호출 실패 시 generateBadgeCelebrationMessage 로 fallback.
+
+interface BadgeCelebrationApiResponse {
+  message?: string
+  source?: string
+  error?: string
+}
+
+/**
+ * 배지 획득 축하/회고 메시지를 생성합니다.
+ *
+ * - VITE_BADGE_AI_ENDPOINT 설정 시: Serverless Function → OpenAI API 경유
+ * - 미설정 / 호출 실패 / 타임아웃(5초): 로컬 템플릿 fallback
+ * - OPENAI_API_KEY 는 서버 환경변수에만 존재, 프론트 번들에 포함되지 않습니다.
+ */
+export async function generateBadgeCelebrationMessageWithApi(
+  params: BadgeCelebrationParams
+): Promise<string> {
+  const endpoint = import.meta.env.VITE_BADGE_AI_ENDPOINT
+
+  // endpoint 미설정 → 즉시 로컬 fallback
+  if (!endpoint || !endpoint.trim()) {
+    return generateBadgeCelebrationMessage(params)
+  }
+
+  const { badge, streak, notesSinceLastBadge } = params
+
+  // 감사 내용 샘플 추출 (최대 5개, 15자 이하)
+  const sampleGratitudes = notesSinceLastBadge
+    .flatMap((n) => [n.gratitude1, n.gratitude2, n.gratitude3])
+    .filter((g) => g.trim().length > 0 && g.trim().length <= 15)
+    .slice(0, 5)
+
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 5000)
+
+  try {
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        badgeId: badge.id,
+        badgeLabel: badge.label,
+        badgeEmoji: badge.emoji,
+        streak,
+        analyzedNoteCount: notesSinceLastBadge.length,
+        sampleGratitudes,
+        lang: 'ko',
+      }),
+      signal: controller.signal,
+    })
+
+    clearTimeout(timeoutId)
+
+    if (!res.ok) {
+      return generateBadgeCelebrationMessage(params)
+    }
+
+    const data = (await res.json()) as BadgeCelebrationApiResponse
+    if (typeof data.message === 'string' && data.message.trim()) {
+      return data.message.trim()
+    }
+
+    return generateBadgeCelebrationMessage(params)
+  } catch {
+    clearTimeout(timeoutId)
+    return generateBadgeCelebrationMessage(params)
+  }
 }
