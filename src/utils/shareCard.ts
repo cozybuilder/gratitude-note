@@ -48,11 +48,9 @@ interface ShareBadgeInfo {
 }
 
 function getBadgeForCard(streak: number): ShareBadgeInfo {
-  // 높은 조건부터 탐색 (ACHIEVEMENT_BADGES 는 7일부터 시작)
   const badge = [...ACHIEVEMENT_BADGES].reverse().find((b) => streak >= b.minStreak)
 
   if (!badge) {
-    // streak < 7 → 씨앗 단계 (배지 시스템과 동일한 시작 배지)
     return {
       emoji: '🌰',
       label: '감사 씨앗',
@@ -108,7 +106,6 @@ function roundRectPath(
   ctx.closePath()
 }
 
-// 1줄 말줄임 텍스트 반환
 function ellipsis(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string {
   if (ctx.measureText(text).width <= maxWidth) return text
   let t = text
@@ -118,10 +115,6 @@ function ellipsis(ctx: CanvasRenderingContext2D, text: string, maxWidth: number)
   return t + '…'
 }
 
-/**
- * 텍스트를 maxWidth 기준으로 최대 maxLines 줄로 래핑.
- * 마지막 줄이 넘치면 말줄임 처리.
- */
 function wrapLines(
   ctx: CanvasRenderingContext2D,
   text: string,
@@ -136,7 +129,6 @@ function wrapLines(
       lines.push(remaining)
       break
     }
-    // 들어갈 수 있는 최대 문자 수를 선형 탐색
     let fit = 0
     for (let i = 1; i <= remaining.length; i++) {
       if (ctx.measureText(remaining.slice(0, i)).width <= maxWidth) {
@@ -145,10 +137,9 @@ function wrapLines(
         break
       }
     }
-    if (fit === 0) fit = 1 // 최소 1글자
+    if (fit === 0) fit = 1
 
     if (lines.length === maxLines - 1) {
-      // 마지막 줄 — 남은 전체를 말줄임
       lines.push(ellipsis(ctx, remaining, maxWidth))
       break
     }
@@ -167,8 +158,13 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
   canvas.height = H
   const ctx = canvas.getContext('2d')!
 
+  // ── 배경·아이콘 이미지 병렬 로드 ─────────────────────────────────────────────
+  const [heroImg, iconImg] = await Promise.all([
+    loadImage(SEASON_IMAGES[getCurrentSeason()]),
+    loadImage('/icons/icon-192x192.png').catch(() => null as HTMLImageElement | null),
+  ])
+
   // ── 1. Hero 배경 ─────────────────────────────────────────────────────────────
-  const heroImg = await loadImage(SEASON_IMAGES[getCurrentSeason()])
   const scale = Math.max(W / heroImg.width, H / heroImg.height)
   const sw = heroImg.width * scale
   const sh = heroImg.height * scale
@@ -179,7 +175,7 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
   ctx.drawImage(heroImg, sx - 24, sy - 24, sw + 48, sh + 48)
   ctx.filter = 'none'
 
-  // ── 2. 따뜻한 크림 오버레이 ──────────────────────────────────────────────────
+  // ── 2. 크림 오버레이 ──────────────────────────────────────────────────────────
   ctx.fillStyle = 'rgba(255, 248, 234, 0.38)'
   ctx.fillRect(0, 0, W, H)
 
@@ -216,40 +212,43 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
 
   // ── 레이아웃 상수 ────────────────────────────────────────────────────────────
   const PAD = 70
-  const cX = CX + PAD           // 콘텐츠 시작 x
-  const cW = CW - PAD * 2       // 콘텐츠 폭
+  const cX = CX + PAD
+  const cW = CW - PAD * 2
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // 상단 섹션 — 여백 압축 (기존 대비 ~60px 절감)
+  // 6. 앱 아이콘 (브랜드 텍스트 대체)
   // ─────────────────────────────────────────────────────────────────────────────
+  const ICON_SIZE = 88
+  const ICON_X = W / 2 - ICON_SIZE / 2
+  const ICON_Y = CY + 48               // 카드 상단에서 48px
 
-  // ── 6. 브랜드명 ─────────────────────────────────────────────────────────────
+  if (iconImg) {
+    // 둥근 사각형 클립으로 아이콘 표시
+    ctx.save()
+    roundRectPath(ctx, ICON_X, ICON_Y, ICON_SIZE, ICON_SIZE, 20)
+    ctx.clip()
+    ctx.drawImage(iconImg, ICON_X, ICON_Y, ICON_SIZE, ICON_SIZE)
+    ctx.restore()
+
+    // 미세 테두리
+    roundRectPath(ctx, ICON_X, ICON_Y, ICON_SIZE, ICON_SIZE, 20)
+    ctx.strokeStyle = 'rgba(224, 123, 79, 0.22)'
+    ctx.lineWidth = 1.5
+    ctx.stroke()
+  }
+
+  // ── 7. 메인 태그라인 — 축소(44px), 주홍색, 부드러운 슬로건 느낌 ──────────────
+  // 아이콘 하단(CY+48+88=CY+136)에서 42px gap → 기준선 CY+136+46=CY+182
   ctx.textAlign = 'center'
   ctx.fillStyle = C.orange
-  ctx.font = `500 36px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
-  ctx.letterSpacing = '2px'
-  ctx.fillText('감사일기', W / 2, CY + 68)        // 기존 +82 → +68
-  ctx.letterSpacing = '0px'
-
-  ctx.strokeStyle = C.orange
-  ctx.lineWidth = 2
-  ctx.lineCap = 'round'
-  ctx.beginPath()
-  ctx.moveTo(W / 2 - 36, CY + 80)               // 기존 +95 → +80
-  ctx.lineTo(W / 2 + 36, CY + 80)
-  ctx.stroke()
-  ctx.lineCap = 'butt'
-
-  // ── 7. 메인 태그라인 ─────────────────────────────────────────────────────────
-  ctx.fillStyle = C.warmDark
-  ctx.font = `800 62px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
-  ctx.fillText('하루 3개의 감사가', W / 2, CY + 138)  // 기존 +160 → +138
-  ctx.fillText('삶의 질을 바꾼다',  W / 2, CY + 202)  // 기존 +232 → +202
+  ctx.font = `500 44px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
+  ctx.fillText('하루 3개의 감사가', W / 2, CY + 182)   // 기존 800 62px warmDark → 500 44px orange
+  ctx.fillText('삶의 질을 바꿉니다', W / 2, CY + 236)   // "바꾼다" → "바꿉니다"
 
   // ── 8. 장식 점 ───────────────────────────────────────────────────────────────
   ;[-20, 0, 20].forEach((dx) => {
     ctx.beginPath()
-    ctx.arc(W / 2 + dx, CY + 232, 4, 0, Math.PI * 2) // 기존 +272 → +232
+    ctx.arc(W / 2 + dx, CY + 266, 4, 0, Math.PI * 2)
     ctx.fillStyle = 'rgba(224, 123, 79, 0.40)'
     ctx.fill()
   })
@@ -262,7 +261,7 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
   ctx.font = `400 34px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
   const dateW = ctx.measureText(dateStr).width + 64
   const pillX = (W - dateW) / 2
-  const pillY = CY + 252                            // 기존 +298 → +252
+  const pillY = CY + 288                            // 기존 +252 → +288
 
   roundRectPath(ctx, pillX, pillY, dateW, 54, 27)
   ctx.fillStyle = 'rgba(224, 123, 79, 0.09)'
@@ -277,34 +276,32 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
   // ── 10. 섹션 헤더 ────────────────────────────────────────────────────────────
   ctx.fillStyle = C.warmMute
   ctx.font = `500 36px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
-  ctx.fillText('오늘 감사한 일 3가지', W / 2, CY + 358) // 기존 +418 → +358
+  ctx.fillText('오늘 감사한 일 3가지', W / 2, CY + 396) // 기존 +358 → +396
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // 감사 항목 — ROW_H 120→160, 폰트 44→36px, 최대 2줄 래핑
+  // 감사 항목 — ROW_H=160, 폰트 36px, 최대 2줄 래핑
   // ─────────────────────────────────────────────────────────────────────────────
 
-  const ROW_H  = 160                // 기존 120 → 160 (+40px)
-  const ROW_G  = 12                 // 기존 18  → 12
+  const ROW_H  = 160
+  const ROW_G  = 12
   const BRAD   = 28
   const BADGE_CX = cX + BRAD + 4
   const TEXT_X   = cX + BRAD * 2 + 28
   const TEXT_W   = cW - BRAD * 2 - 32
-  const TEXT_FONT = 36              // 기존 44  → 36 (-18%)
-  const LINE_H   = 44              // 줄 간격 (36px 폰트 기준)
+  const TEXT_FONT = 36
+  const LINE_H   = 44
 
   const gratitudes = [note.gratitude1, note.gratitude2, note.gratitude3]
-  let rowY = CY + 386               // 기존 +446 → +386
+  let rowY = CY + 424                               // 기존 +386 → +424
 
   for (let i = 0; i < gratitudes.length; i++) {
     const g = gratitudes[i].trim()
     if (!g) continue
 
-    // row 배경
     roundRectPath(ctx, cX, rowY, cW, ROW_H, 22)
     ctx.fillStyle = C.itemBg
     ctx.fill()
 
-    // 번호 뱃지
     const bcy = rowY + ROW_H / 2
     const grad = ctx.createRadialGradient(BADGE_CX - 5, bcy - 5, 2, BADGE_CX, bcy, BRAD)
     grad.addColorStop(0, C.orangeL)
@@ -319,12 +316,10 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
     ctx.font = `700 30px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
     ctx.fillText(String(i + 1), BADGE_CX, bcy + 11)
 
-    // 감사 텍스트 — 최대 2줄 래핑
     ctx.textAlign = 'left'
     ctx.font = `400 ${TEXT_FONT}px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
     const textLines = wrapLines(ctx, g, TEXT_W, 2)
 
-    // 줄 수에 따라 수직 중앙 정렬
     const totalTextH = (textLines.length - 1) * LINE_H
     const baseY = bcy - totalTextH / 2 + TEXT_FONT * 0.36
 
@@ -339,13 +334,13 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
   // ── 12. 기분 pill ────────────────────────────────────────────────────────────
   const mood = MOOD_META[note.mood]
   const moodText = `오늘의 기분   ${mood.emoji}  ${mood.label}`
-  const moodTop = rowY + 18                         // 기존 rowY+32 → rowY+18
+  const moodTop = rowY + 18
 
   ctx.font = `400 36px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
   const mpW = ctx.measureText(moodText).width + 76
   const mpX = (W - mpW) / 2
 
-  roundRectPath(ctx, mpX, moodTop, mpW, 58, 29)    // 기존 h=62 → 58
+  roundRectPath(ctx, mpX, moodTop, mpW, 58, 29)
   ctx.fillStyle = 'rgba(224, 123, 79, 0.08)'
   ctx.fill()
   roundRectPath(ctx, mpX, moodTop, mpW, 58, 29)
@@ -356,9 +351,10 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
   ctx.textAlign = 'center'
   ctx.fillText(moodText, W / 2, moodTop + 38)
 
-  // ── 13. 하단 구분선 (카드 하단 고정 기준) ─────────────────────────────────────
-  const cardBottom = CY + CH           // 1290
-  const sepY       = cardBottom - 220  // 기존 -234 → -220 (하단 압축)
+  // ── 13. 하단 구분선 ───────────────────────────────────────────────────────────
+  // 감성 문구 제거로 하단 섹션 220→180px 압축
+  const cardBottom = CY + CH          // 1290
+  const sepY       = cardBottom - 180 // 기존 -220 → -180
 
   ctx.setLineDash([5, 9])
   ctx.strokeStyle = 'rgba(224, 123, 79, 0.24)'
@@ -394,23 +390,19 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
     ctx.fillStyle = C.warmMid
     ctx.font = `600 40px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
     ctx.textAlign = 'center'
-    ctx.fillText(`${badgeInfo.emoji}  ${badgeInfo.label}`, W / 2, sepY + 44) // 기존 +48 → +44
+    ctx.fillText(`${badgeInfo.emoji}  ${badgeInfo.label}`, W / 2, sepY + 44)
   }
 
   // 연속 기록 서브 텍스트
   ctx.fillStyle = badgeInfo.isLegend ? C.goldLight : C.warmMute
   ctx.font = `400 30px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
-  ctx.fillText(badgeInfo.streakLine, W / 2, sepY + 82)  // 기존 +92 → +82
+  ctx.fillText(badgeInfo.streakLine, W / 2, sepY + 82)
 
-  // ── 15. 감성 문구 ────────────────────────────────────────────────────────────
-  ctx.fillStyle = C.orange
-  ctx.font = `700 44px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
-  ctx.fillText('작은 감사가 행복을 만듭니다', W / 2, sepY + 130)  // 기존 +148 → +130
-
-  // ── 16. URL (문구 아래 작게) ─────────────────────────────────────────────────
+  // ── 15. URL ──────────────────────────────────────────────────────────────────
+  // 감성 문구 제거 → URL이 배지 바로 아래 배치
   ctx.fillStyle = C.warmMute
-  ctx.font = `400 24px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif` // 기존 28px → 24px
-  ctx.fillText(SERVICE_URL, W / 2, sepY + 170)  // 기존 +196 → +170
+  ctx.font = `400 24px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
+  ctx.fillText(SERVICE_URL, W / 2, sepY + 130)    // 기존 +170 → +130
 
   // ── 반환 ──────────────────────────────────────────────────────────────────────
   return new Promise((resolve, reject) => {
