@@ -7,7 +7,7 @@ import { getNotes, saveAllNotes, clearAllNotes } from './storage'
 import { getThemeMode } from './theme'
 import type { ThemeMode } from './theme'
 
-const BACKUP_VERSION = '1.6.0'
+const BACKUP_VERSION = '1.7.1'
 const VALID_MOODS = new Set(['great', 'good', 'neutral', 'bad', 'terrible'])
 
 // ── 타입 ─────────────────────────────────────────────────────────

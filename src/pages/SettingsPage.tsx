@@ -16,7 +16,7 @@ import {
   set10pmEnabled,
 } from '../utils/notification'
 
-const APP_VERSION = '1.6.0'
+const APP_VERSION = '1.7.1'
 const CONTACT_EMAIL = 'cozybuilder.studio@gmail.com'
 
 // ── 테마 옵션 ─────────────────────────────────────────────────────

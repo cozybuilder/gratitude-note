@@ -5,7 +5,18 @@
 
 ---
 
-## [1.7.1] — AI API 인프라 완성 + 기본 OFF 정책
+## [1.7.1] — AI API 인프라 완성 + 기본 OFF 정책 + Android 정식 릴리즈 준비
+
+### Android Release (v1.7.1)
+- `android/app/build.gradle` — versionCode 2 → 3, versionName 1.6.1 → 1.7.1
+- `src/pages/SettingsPage.tsx` — APP_VERSION '1.6.0' → '1.7.1' (앱 설정 화면 버전 표시)
+- `src/utils/backup.ts` — BACKUP_VERSION '1.6.0' → '1.7.1' (JSON 백업 파일 버전 태그)
+- Google Play 프로덕션 액세스 권한 승인 완료
+- 비공개 테스트(v1.6.0) 종료 → 정식 출시 대기 상태
+
+---
+
+## [1.7.1] (웹/기능) — AI API 인프라 완성 + 기본 OFF 정책
 
 ### Added
 - `api/badge-celebration.ts` — Vercel Serverless Function (Node.js Runtime)

@@ -9,14 +9,14 @@
 
 | 항목 | 상태 |
 |------|------|
-| **최신 버전** | v1.7.1 (commit `304e0fd`) |
+| **최신 버전** | v1.7.1 (Android Release 준비 완료) |
 | **GitHub** | https://github.com/cozybuilder/gratitude-note (`master`) |
 | **Vercel** | https://gratitude-note-theta.vercel.app (배포 완료) |
-| **Android versionCode** | 2 |
-| **Android versionName** | 1.6.1 |
-| **Play Store 상태** | 출시 준비 중 (정식 출시 전) |
+| **Android versionCode** | 3 |
+| **Android versionName** | 1.7.1 |
+| **Play Store 상태** | 프로덕션 액세스 승인 완료 — Signed AAB 빌드 후 업로드 대기 |
 | **AI 기능** | 구현 완료, 기본 OFF (`ENABLE_BADGE_AI_API = false`) |
-| **빌드 상태** | `npm run build` 통과 ✅ |
+| **빌드 상태** | `npm run build` 통과 ✅ / `npx cap sync android` 통과 ✅ |
 
 ---
 
