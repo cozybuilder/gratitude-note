@@ -9,13 +9,15 @@
 
 | 항목 | 상태 |
 |------|------|
-| **최신 버전** | v1.7.1 (Android Release 준비 완료) |
+| **최신 버전** | v1.8.0 (Android Release 준비 완료) |
 | **GitHub** | https://github.com/cozybuilder/gratitude-note (`master`) |
 | **Vercel** | https://gratitude-note-theta.vercel.app (배포 완료) |
-| **Android versionCode** | 3 |
-| **Android versionName** | 1.7.1 |
-| **Play Store 상태** | 프로덕션 액세스 승인 완료 — Signed AAB 빌드 후 업로드 대기 |
+| **Android versionCode** | 4 |
+| **Android versionName** | 1.8.0 |
+| **Play Store 상태** | v1.7.1 프로덕션 출시 완료 → v1.8.0 Signed AAB 빌드 후 업로드 예정 |
 | **AI 기능** | 구현 완료, 기본 OFF (`ENABLE_BADGE_AI_API = false`) |
+| **Local Notifications** | @capacitor/local-notifications@8.2.0 도입, Android 앱 알림 정상화 |
+| **AdMob** | @capacitor-community/admob@8.0.0 도입, 테스트 배너 구조 완료 |
 | **빌드 상태** | `npm run build` 통과 ✅ / `npx cap sync android` 통과 ✅ |
 
 ---

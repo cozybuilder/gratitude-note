@@ -11,9 +11,9 @@
 |------|------|
 | **앱 이름** | 감사일기 |
 | **패키지 ID** | com.cozybuilder.gratitudediary |
-| **최신 배포 versionCode** | 3 |
-| **최신 배포 versionName** | 1.7.1 |
-| **Play Store 트랙** | 프로덕션 액세스 승인 완료 — 정식 출시 대기 중 |
+| **최신 배포 versionCode** | 4 (준비 완료, AAB 빌드 대기) |
+| **최신 배포 versionName** | 1.8.0 |
+| **Play Store 트랙** | 프로덕션 액세스 승인 완료 — v1.8.0 Signed AAB 빌드 후 업로드 예정 |
 
 ---
 
@@ -27,7 +27,7 @@ android/app/build.gradle
   versionName  ← 사용자에게 표시되는 버전 (예: 1.7.0)
 ```
 
-- [ ] `versionCode` 증가 확인 (현재: 3 → 다음: 4 이상)
+- [ ] `versionCode` 증가 확인 (현재: 4 → 다음: 5 이상)
 - [ ] `versionName` 업데이트 확인
 
 ### A-2. 빌드 환경 준비
@@ -97,8 +97,9 @@ android/app/build.gradle
 ### C-2. 출시 노트 예시
 
 ```
-[v1.7.1] 배지 축하 메시지 기능 개선
-- 배지 획득 시 더 다양한 응원 메시지를 제공합니다
+[v1.8.0] 알림 기능 개선 및 광고 배너 추가
+- Android 앱에서 알림이 정상적으로 전달됩니다 (앱이 꺼진 상태에서도)
+- 앱 하단에 배너 광고가 추가되었습니다
 - 앱 안정성 개선
 ```
 
@@ -152,6 +153,7 @@ android/app/build.gradle
 | 1 | 1.6.0 | - | 내부 테스트 | Capacitor Android 초기 빌드 |
 | 2 | 1.6.1 | - | 내부 테스트 | 테스트 빌드 버전 번호 업데이트 |
 | 3 | 1.7.1 | 2026-06-09 | 프로덕션 대기 | 배지 시스템·AI 인프라·설정 버전 반영, 프로덕션 권한 승인 |
+| 4 | 1.8.0 | 2026-06-28 | Signed AAB 빌드 대기 | Local Notifications(Capacitor), AdMob 테스트 배너 도입 |
 
 ---
 

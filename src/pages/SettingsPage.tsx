@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Header } from '../components/layout/Header'
 import { Modal } from '../components/common/Modal'
@@ -9,14 +9,15 @@ import { exportBackup, importBackup } from '../utils/backup'
 import type { ImportResult } from '../utils/backup'
 import {
   requestNotificationPermission,
-  getNotificationPermission,
+  getNotificationPermissionAsync,
   get6pmEnabled,
   get10pmEnabled,
   set6pmEnabled,
   set10pmEnabled,
 } from '../utils/notification'
+import type { NotifPermStatus } from '../utils/notification'
 
-const APP_VERSION = '1.7.1'
+const APP_VERSION = '1.8.0'
 const CONTACT_EMAIL = 'cozybuilder.studio@gmail.com'
 
 // ── 테마 옵션 ─────────────────────────────────────────────────────
@@ -35,11 +36,14 @@ export function SettingsPage() {
   const [resetDone, setResetDone] = useState(false)
   const [importResult, setImportResult] = useState<ImportResult | null>(null)
   const [isImporting, setIsImporting] = useState(false)
-  const [notifPerm, setNotifPerm] = useState<ReturnType<typeof getNotificationPermission>>(
-    () => getNotificationPermission()
-  )
+  const [notifPerm, setNotifPerm] = useState<NotifPermStatus>('default')
   const [notif6pm,  setNotif6pm]  = useState(() => get6pmEnabled())
   const [notif10pm, setNotif10pm] = useState(() => get10pmEnabled())
+
+  // 비동기로 실제 권한 상태 확인 (Android/Web 모두)
+  useEffect(() => {
+    getNotificationPermissionAsync().then(setNotifPerm)
+  }, [])
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -121,9 +125,9 @@ export function SettingsPage() {
                   {notifPerm === 'granted'
                     ? '미작성 시 아래 설정 시간에 알림을 발송합니다'
                     : notifPerm === 'denied'
-                    ? '브라우저 설정에서 알림을 허용해주세요'
+                    ? '기기 설정에서 감사일기 알림을 허용해주세요'
                     : notifPerm === 'unsupported'
-                    ? '이 브라우저는 알림을 지원하지 않습니다'
+                    ? '이 환경에서는 알림이 지원되지 않습니다'
                     : '알림을 허용하면 매일 감사 리마인더를 받을 수 있습니다'}
                 </p>
               </div>
@@ -137,7 +141,7 @@ export function SettingsPage() {
                 type="button"
                 onClick={async () => {
                   const perm = await requestNotificationPermission()
-                  setNotifPerm(perm)
+                  setNotifPerm(perm as NotifPermStatus)
                 }}
                 className="rounded-full bg-primary-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary-600 transition-colors"
               >
@@ -192,7 +196,7 @@ export function SettingsPage() {
           </div>
 
           <p className="px-5 pb-4 pt-2 text-xs leading-relaxed text-[#8a7570]">
-            ℹ️ 브라우저 정책에 따라 앱이 완전히 종료된 경우 알림이 제한될 수 있습니다.
+            ℹ️ 오늘 이미 기록을 작성한 경우 알림은 발송되지 않습니다.
           </p>
         </section>
 

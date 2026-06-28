@@ -1,62 +1,71 @@
-/**
- * AdBanner — 배너 광고 컴포넌트
- *
- * 환경변수 설정 방법 (.env.local):
- *   VITE_ADMOB_APP_ID=ca-pub-XXXXXXXXXXXXXXXX   ← Google AdSense Publisher ID
- *   VITE_ADMOB_BANNER_ID=XXXXXXXXXX              ← Ad Unit ID (슬롯 ID)
- *
- * 두 값이 모두 설정된 경우 → 실제 AdSense 배너 렌더링
- * 미설정 시 → "광고 영역" 플레이스홀더 표시
- */
+// ── AdBanner — Capacitor AdMob 배너 광고 ────────────────────────
+// Android Native 환경에서만 표시. Web/PWA에서는 아무것도 렌더링하지 않음.
+//
+// 광고 ID 설정 (.env.local):
+//   VITE_ADMOB_APP_ID   — AdMob App ID (ca-app-pub-XXXXX~XXXXX)
+//   VITE_ADMOB_BANNER_ID — Banner Ad Unit ID (ca-app-pub-XXXXX/XXXXX)
+//
+// 미설정 시 Google 공식 테스트 광고 ID를 사용합니다.
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
+import { Capacitor } from '@capacitor/core'
+import { AdMob, BannerAdSize, BannerAdPosition } from '@capacitor-community/admob'
 
-const APP_ID = import.meta.env.VITE_ADMOB_APP_ID
-const BANNER_ID = import.meta.env.VITE_ADMOB_BANNER_ID
-const isAdConfigured = Boolean(APP_ID && BANNER_ID)
+const isNative = Capacitor.isNativePlatform()
+
+// 환경변수 미설정 시 Google 공식 테스트 ID 사용
+const ADMOB_BANNER_ID = import.meta.env.VITE_ADMOB_BANNER_ID ?? 'ca-app-pub-3940256099942544/6300978111'
+const IS_TESTING      = !import.meta.env.VITE_ADMOB_BANNER_ID // 환경변수 미설정이면 테스트 모드
+
+async function initAdMob() {
+  try {
+    await AdMob.initialize()
+  } catch {
+    // 초기화 실패 무시 (에뮬레이터 등)
+  }
+}
+
+async function showBanner() {
+  try {
+    await AdMob.showBanner({
+      adId: ADMOB_BANNER_ID,
+      adSize: BannerAdSize.ADAPTIVE_BANNER,
+      position: BannerAdPosition.BOTTOM_CENTER,
+      margin: 56, // BottomNav 높이만큼 위로 띄움 (px)
+      isTesting: IS_TESTING,
+    })
+  } catch {
+    // 배너 로드 실패 시 조용히 무시 — 앱 기능에 영향 없음
+  }
+}
+
+async function hideBanner() {
+  try {
+    await AdMob.hideBanner()
+  } catch {
+    // 무시
+  }
+}
 
 export function AdBanner() {
+  const initialized = useRef(false)
+
   useEffect(() => {
-    if (!isAdConfigured) return
+    if (!isNative) return
+    if (initialized.current) return
+    initialized.current = true
 
-    // AdSense 스크립트 동적 주입 (중복 방지)
-    const SCRIPT_ATTR = 'data-admob-injected'
-    if (!document.querySelector(`script[${SCRIPT_ATTR}]`)) {
-      const script = document.createElement('script')
-      script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${APP_ID}`
-      script.async = true
-      script.crossOrigin = 'anonymous'
-      script.setAttribute(SCRIPT_ATTR, 'true')
-      document.head.appendChild(script)
-    }
+    initAdMob().then(() => showBanner())
 
-    // 광고 슬롯 초기화
-    try {
-      window.adsbygoogle = window.adsbygoogle ?? []
-      window.adsbygoogle.push({})
-    } catch {
-      // 초기화 실패 무시 (개발 환경 등)
+    return () => {
+      hideBanner()
     }
   }, [])
 
-  if (!isAdConfigured) {
-    // ── 플레이스홀더 (환경변수 미설정 시) ──────────────────────────
-    return (
-      <div className="flex h-[50px] w-full items-center justify-center border-t border-warm-200 bg-warm-100">
-        <span className="text-xs text-[#8a7570]">광고 영역</span>
-      </div>
-    )
-  }
+  // Web/PWA에서는 아무것도 렌더링하지 않음
+  if (!isNative) return null
 
-  // ── 실제 AdSense 배너 ────────────────────────────────────────────
-  return (
-    <div className="flex w-full items-center justify-center overflow-hidden border-t border-warm-200 bg-warm-100">
-      <ins
-        className="adsbygoogle"
-        style={{ display: 'inline-block', width: '320px', height: '50px' }}
-        data-ad-client={APP_ID}
-        data-ad-slot={BANNER_ID}
-      />
-    </div>
-  )
+  // Android Native: AdMob이 네이티브 레이어에 배너를 직접 렌더링하므로
+  // 배너 높이만큼 여백을 확보하는 placeholder만 렌더링
+  return <div style={{ height: '60px' }} aria-hidden="true" />
 }

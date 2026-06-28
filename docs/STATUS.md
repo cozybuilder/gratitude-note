@@ -5,18 +5,20 @@
 
 ---
 
-## 현재 상태 (2026-06-09 기준)
+## 현재 상태 (2026-06-28 기준)
 
 | 항목 | 상태 |
 |------|------|
-| **앱 버전** | v1.7.1 |
-| **Android versionCode** | 3 |
-| **Android versionName** | 1.7.1 |
+| **앱 버전** | v1.8.0 |
+| **Android versionCode** | 4 |
+| **Android versionName** | 1.8.0 |
 | **웹 빌드** | ✅ 통과 (`npm run build`) |
 | **Capacitor Sync** | ✅ 통과 (`npx cap sync android`) |
 | **GitHub master** | https://github.com/cozybuilder/gratitude-note |
 | **Vercel** | https://gratitude-note-theta.vercel.app (운영 중) |
 | **AI API** | 구현 완료, 기본 OFF (`ENABLE_BADGE_AI_API = false`) |
+| **Local Notifications** | @capacitor/local-notifications@8.2.0 도입 완료 |
+| **AdMob** | @capacitor-community/admob@8.0.0 도입, 테스트 배너 구조 완료 |
 
 ---
 
@@ -26,18 +28,22 @@
 |------|------|
 | **프로덕션 액세스 권한** | ✅ 승인 완료 |
 | **비공개 테스트** | 종료 (마지막 버전: v1.6.0, versionCode 2) |
-| **현재 단계** | AAB 빌드 생성 → 프로덕션 배포 대기 |
-| **다음 액션** | Android Studio에서 Signed AAB(versionCode 3) 생성 → Play Console 업로드 |
+| **현재 단계** | v1.8.0 Signed AAB 빌드 → 프로덕션 업로드 대기 |
+| **다음 액션** | Android Studio에서 Signed AAB(versionCode 4) 생성 → Play Console 업로드 |
 
 ---
 
 ## AAB 빌드 전 준비 완료 항목
 
-- [x] `android/app/build.gradle` — versionCode 3, versionName 1.7.1
-- [x] `src/pages/SettingsPage.tsx` — APP_VERSION = '1.7.1'
-- [x] `src/utils/backup.ts` — BACKUP_VERSION = '1.7.1'
-- [x] `npm run build` — 통과
-- [x] `npx cap sync android` — 통과
+- [x] `android/app/build.gradle` — versionCode 4, versionName 1.8.0
+- [x] `src/pages/SettingsPage.tsx` — APP_VERSION = '1.8.0'
+- [x] `src/utils/backup.ts` — BACKUP_VERSION = '1.8.0'
+- [x] `src/utils/notification.ts` — Capacitor LocalNotifications 분기 구현
+- [x] `src/components/ad/AdBanner.tsx` — Capacitor AdMob 배너 구현
+- [x] `android/app/src/main/AndroidManifest.xml` — 권한 및 AdMob meta-data
+- [x] `capacitor.config.ts` — LocalNotifications 설정
+- [x] `npm run build` — 통과 (TS 오류 없음)
+- [x] `npx cap sync android` — 통과 (2개 플러그인 등록 확인)
 - [ ] Android Studio — Signed AAB 생성 (사장 직접 수행)
 - [ ] Play Console — 프로덕션 트랙 업로드
 - [ ] 휴대폰 최종 테스트
@@ -55,7 +61,7 @@
 | 배지 획득 모달 | 7일 달성 시 모달 표시 + 메시지 확인 |
 | 공유 카드 | 기록 상세 → 공유 버튼 → 이미지 생성 확인 |
 | 알림 설정 | 설정 → 알림 ON/OFF 토글 확인 |
-| 앱 버전 표시 | 설정 → "버전" → 1.7.1 표시 확인 |
+| 앱 버전 표시 | 설정 → "버전" → 1.8.0 표시 확인 |
 | 캘린더 날짜 선택 | 캘린더 탭 → 날짜 탭 → 해당일 기록 조회 확인 |
 | 다크 모드 | 설정 → 다크 모드 전환 확인 |
 | 백업 | 설정 → 내보내기 → JSON 파일 생성 확인 |
@@ -70,3 +76,4 @@
 | v1.6.1 | 테스트 빌드 versionCode 2 |
 | v1.7.0 | 배지 축하 메시지 1차 구현 |
 | v1.7.1 | AI Serverless Function, 기본 OFF 정책, 프로덕션 권한 승인 |
+| v1.8.0 | Local Notifications(Capacitor), AdMob 테스트 배너 도입 |

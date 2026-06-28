@@ -47,15 +47,17 @@ export function PrivacyPage() {
           </ul>
         </PolicySection>
 
-        <PolicySection title="3. 광고">
+        <PolicySection title="3. 광고 및 광고 식별자">
           <p>
-            앱 운영을 위해 Google AdSense 등 서드파티 광고 SDK가 사용될 수 있습니다.
-            광고 SDK는 기기 정보, 광고 ID 등을 수집할 수 있으며, 해당 정보는
-            각 SDK 제공사의 개인정보처리방침을 따릅니다.
+            앱 운영을 위해 Google AdMob(Google LLC) 광고 SDK가 사용됩니다.
+            AdMob은 광고 게재 최적화를 위해 광고 ID(Android: GAID)를 수집할 수 있으며,
+            해당 정보는 Google의 개인정보처리방침을 따릅니다.
           </p>
           <ul className="mt-2 list-disc pl-5">
+            <li>Android 앱 하단에 배너 광고 1개가 표시됩니다.</li>
             <li>전면 광고, 보상형 광고는 제공하지 않습니다.</li>
-            <li>배너 광고만 제공되며 앱 사용 흐름을 방해하지 않습니다.</li>
+            <li>감사 기록 작성 화면에는 광고가 표시되지 않습니다.</li>
+            <li>광고 ID 수집을 원하지 않으시면 기기 설정에서 광고 개인화를 비활성화할 수 있습니다.</li>
           </ul>
         </PolicySection>
 
@@ -91,7 +93,7 @@ export function PrivacyPage() {
           </a>
         </PolicySection>
 
-        <p className="pt-2 text-xs text-[#8a7570]">최종 업데이트: 2026년 6월 8일</p>
+        <p className="pt-2 text-xs text-[#8a7570]">최종 업데이트: 2026년 6월 9일</p>
       </div>
     </div>
   )
