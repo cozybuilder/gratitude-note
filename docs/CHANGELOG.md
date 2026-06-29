@@ -27,9 +27,13 @@
   - "이 브라우저는 알림을 지원하지 않습니다" → "이 환경에서는 알림이 지원되지 않습니다"
   - Android 앱에서 권한 상태 비동기 확인 (Capacitor API)
   - APP_VERSION 1.7.1 → 1.8.0
-- `src/components/note/ShareCardModal.tsx` — @capacitor/share 도입
-  - Android Native: FileReader → base64 dataURL → `Share.share()` (시스템 공유 시트)
-  - Web/PWA: 기존 `navigator.share(File)` 유지
+- `src/components/note/ShareCardModal.tsx` — @capacitor/share 도입 + UI 단순화
+  - Android Native: Filesystem 임시 파일 저장 → `Share.share({ files: [uri] })` (시스템 공유 시트)
+  - Android Native: 단일 "이미지 공유" 버튼만 표시 ("이미지 저장"·"링크 복사" 제거)
+  - Android Native: "카카오톡, 인스타그램, 갤러리 등으로 이미지를 바로 공유할 수 있습니다." 안내문 표시
+  - Web/PWA: 기존 3개 버튼 유지 (이미지 공유 / 이미지 저장 / 링크 복사)
+- `src/utils/notification.ts` — `scheduleTestNotification()` 추가 (진단용 1분 뒤 알림)
+- `src/pages/SettingsPage.tsx` — Android + 권한 허용 시 "1분 뒤 테스트 알림 보내기" 버튼 표시 (진단용)
 - `src/components/ad/AdBanner.tsx` — HTML in-flow placeholder (광고 미노출, 컴포넌트 보존)
 - `src/pages/HomePage.tsx` — AdBanner 렌더링 제거 (v1.8.0 광고 미노출 결정)
 - `src/utils/backup.ts` — BACKUP_VERSION 1.7.1 → 1.8.0
