@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
+import { Capacitor } from '@capacitor/core'
+import { Share } from '@capacitor/share'
 import type { Note } from '../../types/note'
 import { generateShareCard } from '../../utils/shareCard'
+
+const isNative = Capacitor.isNativePlatform()
 
 interface ShareCardModalProps {
   note: Note
@@ -55,11 +59,33 @@ export function ShareCardModal({ note, streak = 0, onClose }: ShareCardModalProp
     const blob = blobRef.current
     if (!blob) return
 
+    if (isNative) {
+      // Android Native: Capacitor Share — 시스템 공유 시트 표시
+      try {
+        const dataUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onload = () => resolve(reader.result as string)
+          reader.onerror = reject
+          reader.readAsDataURL(blob)
+        })
+        await Share.share({
+          title: '감사일기',
+          text: '오늘의 감사 일기를 공유합니다 🌿',
+          url: dataUrl,
+          dialogTitle: '공유하기',
+        })
+        setShareNotice(null)
+      } catch {
+        // 사용자 취소 또는 공유 실패 — 무시
+      }
+      return
+    }
+
+    // Web/PWA: Web Share API (파일 공유 지원 브라우저)
     const file = new File([blob], `감사일기-${note.gratitudeDate}.png`, { type: 'image/png' })
     const shareData = { files: [file], title: '감사일기', text: '오늘의 감사 일기를 공유합니다 🌿' }
 
     if (navigator.canShare?.(shareData)) {
-      // 파일 공유 지원 (모바일 브라우저)
       try {
         await navigator.share(shareData)
         setShareNotice(null)
