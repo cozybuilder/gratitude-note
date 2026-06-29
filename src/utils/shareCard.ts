@@ -42,16 +42,13 @@ const C = {
 
 // ─── 폰트 ────────────────────────────────────────────────────────────────────
 
-const FONT_KYOBO = "'KyoboHandwriting2025lyb', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif"
+const FONT_ONGEL = "'OnGel', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif"
 let fontLoaded = false
 
 async function ensureFont(): Promise<void> {
   if (fontLoaded) return
   try {
-    const face = new FontFace(
-      'KyoboHandwriting2025lyb',
-      'url(/font/KyoboHandwriting2025lyb.ttf) format("truetype"), url(/font/KyoboHandwriting2025lyb.otf) format("opentype")'
-    )
+    const face = new FontFace('OnGel', 'url(/font/ongel.ttf) format("truetype")')
     await face.load()
     document.fonts.add(face)
     fontLoaded = true
@@ -295,7 +292,7 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
   // ── 7. 메인 태그라인 ──────────────────────────────────────────────────────────
   ctx.textAlign = 'center'
   ctx.fillStyle = C.orange
-  ctx.font = `700 50px ${FONT_KYOBO}`
+  ctx.font = `700 50px ${FONT_ONGEL}`
   ctx.fillText('하루 3개의 감사가 삶의 질을 바꿉니다', W / 2, CY + 236)
 
   // ── 8. 장식 점 ───────────────────────────────────────────────────────────────
@@ -311,7 +308,7 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
   const dateStr = '☀️  ' + new Date(y, m - 1, d).toLocaleDateString('ko-KR', {
     year: 'numeric', month: 'long', day: 'numeric', weekday: 'long',
   })
-  ctx.font = `700 40px ${FONT_KYOBO}`
+  ctx.font = `700 40px ${FONT_ONGEL}`
   const dateW = ctx.measureText(dateStr).width + 64
   const pillX = (W - dateW) / 2
   const pillY = CY + 284
@@ -328,7 +325,7 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
 
   // ── 10. 섹션 헤더 ────────────────────────────────────────────────────────────
   ctx.fillStyle = C.warmMute
-  ctx.font = `700 44px ${FONT_KYOBO}`
+  ctx.font = `700 44px ${FONT_ONGEL}`
   ctx.fillText('오늘 감사한 일 3가지', W / 2, CY + 402)
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -366,11 +363,11 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
 
     ctx.fillStyle = '#FFFCF5'
     ctx.textAlign = 'center'
-    ctx.font = `700 34px ${FONT_KYOBO}`
+    ctx.font = `700 34px ${FONT_ONGEL}`
     ctx.fillText(String(i + 1), BADGE_CX, bcy + 12)
 
     ctx.textAlign = 'left'
-    ctx.font = `400 ${TEXT_FONT}px ${FONT_KYOBO}`
+    ctx.font = `400 ${TEXT_FONT}px ${FONT_ONGEL}`
     const textLines = wrapLines(ctx, g, TEXT_W, 2)
 
     const totalTextH = (textLines.length - 1) * LINE_H
@@ -389,7 +386,7 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
   const moodText = `오늘의 기분   ${mood.emoji}  ${mood.label}`
   const moodTop = rowY + 18
 
-  ctx.font = `700 42px ${FONT_KYOBO}`
+  ctx.font = `700 42px ${FONT_ONGEL}`
   const mpW = ctx.measureText(moodText).width + 76
   const mpX = (W - mpW) / 2
 
@@ -422,7 +419,7 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
 
   if (badgeInfo.isLegend) {
     const legendText = `${badgeInfo.emoji}  ${badgeInfo.label}`
-    ctx.font = `700 46px ${FONT_KYOBO}`
+    ctx.font = `700 46px ${FONT_ONGEL}`
     const lw = ctx.measureText(legendText).width + 72
     const lx = (W - lw) / 2
     const ly = sepY + 12
@@ -440,25 +437,25 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
     ctx.fillText(legendText, W / 2, ly + 36)
   } else {
     ctx.fillStyle = C.warmMid
-    ctx.font = `700 46px ${FONT_KYOBO}`
+    ctx.font = `700 46px ${FONT_ONGEL}`
     ctx.textAlign = 'center'
     ctx.fillText(`${badgeInfo.emoji}  ${badgeInfo.label}`, W / 2, sepY + 44)
   }
 
   // 연속 기록 서브 텍스트
   ctx.fillStyle = badgeInfo.isLegend ? C.goldLight : C.warmMute
-  ctx.font = `700 36px ${FONT_KYOBO}`
+  ctx.font = `700 36px ${FONT_ONGEL}`
   ctx.fillText(badgeInfo.streakLine, W / 2, sepY + 92)
 
   // ── 15. 홍보 문구 ─────────────────────────────────────────────────────────────
   ctx.fillStyle = 'rgba(154, 123, 110, 0.75)'
-  ctx.font = `400 26px ${FONT_KYOBO}`
+  ctx.font = `400 26px ${FONT_ONGEL}`
   ctx.fillText('오늘의 감사한 일을 공유해보세요.', W / 2, sepY + 136)
   ctx.fillText('작은 감사가 누군가의 하루를 따뜻하게 만듭니다.', W / 2, sepY + 166)
 
   // ── 16. URL ──────────────────────────────────────────────────────────────────
   ctx.fillStyle = C.warmMute
-  ctx.font = `400 22px ${FONT_KYOBO}`
+  ctx.font = `400 22px ${FONT_ONGEL}`
   ctx.fillText(SERVICE_URL, W / 2, sepY + 200)
 
   // ── 반환 ──────────────────────────────────────────────────────────────────────

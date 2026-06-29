@@ -1,9 +1,8 @@
 @import "tailwindcss";
 
 @font-face {
-  font-family: 'KyoboHandwriting2025lyb';
-  src: url('/font/KyoboHandwriting2025lyb.ttf') format('truetype'),
-       url('/font/KyoboHandwriting2025lyb.otf') format('opentype');
+  font-family: 'OnGel';
+  src: url('/font/ongel.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -48,7 +47,7 @@ html {
 body {
   margin: 0;
   background-color: #fffdf9;
-  font-family: 'KyoboHandwriting2025lyb', system-ui, -apple-system, sans-serif;
+  font-family: 'OnGel', system-ui, -apple-system, sans-serif;
   font-weight: 700;
   -webkit-font-smoothing: antialiased;
 }
