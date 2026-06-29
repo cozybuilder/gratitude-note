@@ -39,10 +39,12 @@ export function BadgePage() {
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-warm-200 transition-colors"
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-warm-200 hover:bg-warm-300 transition-colors"
           aria-label="뒤로가기"
         >
-          <span className="text-lg text-[#3d2e26]">‹</span>
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M12.5 15L7.5 10L12.5 5" stroke="#3d2e26" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
         </button>
         <h1 className="text-base font-semibold text-[#3d2e26]">배지</h1>
       </header>

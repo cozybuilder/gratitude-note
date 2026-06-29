@@ -4,6 +4,7 @@ import { Share } from '@capacitor/share'
 import { Filesystem, Directory } from '@capacitor/filesystem'
 import type { Note } from '../../types/note'
 import { generateShareCard } from '../../utils/shareCard'
+import { useAndroidBack } from '../../hooks/useAndroidBack'
 
 const isNative = Capacitor.isNativePlatform()
 
@@ -26,6 +27,8 @@ export function ShareCardModal({ note, streak = 0, onClose }: ShareCardModalProp
   const blobRef = useRef<Blob | null>(null)
   const previewUrl = useRef<string | null>(null)
   const [imgUrl, setImgUrl] = useState<string | null>(null)
+
+  useAndroidBack(onClose)
 
   // 모달 열릴 때 스크롤 잠금
   useEffect(() => {

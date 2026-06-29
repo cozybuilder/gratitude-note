@@ -14,6 +14,7 @@ import {
   requestNotificationPermission,
   getNotificationPermissionAsync,
 } from './utils/notification'
+import { initBackButton } from './utils/backButton'
 
 const ONBOARDING_KEY = 'onboarding_done'
 
@@ -21,6 +22,11 @@ function App() {
   const [onboardingDone, setOnboardingDone] = useState<boolean>(
     () => localStorage.getItem(ONBOARDING_KEY) === 'true'
   )
+
+  // Android 뒤로가기 버튼 글로벌 핸들러 초기화
+  useEffect(() => {
+    return initBackButton()
+  }, [])
 
   // 알림 초기화:
   // - 권한 이미 허용된 경우 → 즉시 스케줄 등록

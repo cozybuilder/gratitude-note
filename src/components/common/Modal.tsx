@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { useEffect } from 'react'
 import { Button } from './Button'
+import { useAndroidBack } from '../../hooks/useAndroidBack'
 
 interface ModalProps {
   isOpen: boolean
@@ -25,6 +26,8 @@ export function Modal({
   onCancel,
   children,
 }: ModalProps) {
+  useAndroidBack(onCancel, isOpen)
+
   // 모달 열릴 때 바디 스크롤 잠금
   useEffect(() => {
     if (isOpen) document.body.style.overflow = 'hidden'

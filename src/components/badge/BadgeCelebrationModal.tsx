@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import type { AchievementBadge } from '../../utils/achievement'
+import { useAndroidBack } from '../../hooks/useAndroidBack'
 
 interface Props {
   badge: AchievementBadge
@@ -10,6 +11,8 @@ interface Props {
 }
 
 export function BadgeCelebrationModal({ badge, streak, onClose, celebrationMessage }: Props) {
+  useAndroidBack(onClose)
+
   // 스크롤 잠금
   useEffect(() => {
     document.body.style.overflow = 'hidden'
