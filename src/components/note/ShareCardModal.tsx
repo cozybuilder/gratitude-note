@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Capacitor } from '@capacitor/core'
 import { Share } from '@capacitor/share'
+import { Filesystem, Directory } from '@capacitor/filesystem'
 import type { Note } from '../../types/note'
 import { generateShareCard } from '../../utils/shareCard'
 
@@ -55,25 +56,45 @@ export function ShareCardModal({ note, streak = 0, onClose }: ShareCardModalProp
 
   // ── 공유 액션 ─────────────────────────────────────────────────────────────────
 
+  // blob → base64 문자열 변환 유틸
+  function blobToBase64(blob: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => {
+        const result = reader.result as string
+        resolve(result.split(',')[1]) // data:image/png;base64, 이후 부분만
+      }
+      reader.onerror = reject
+      reader.readAsDataURL(blob)
+    })
+  }
+
   async function handleShare() {
     const blob = blobRef.current
     if (!blob) return
 
     if (isNative) {
-      // Android Native: Capacitor Share — 시스템 공유 시트 표시
+      // Android Native: 캐시 임시 파일 저장 → 시스템 공유 시트
+      // Share.share()는 HTTP URL 또는 로컬 file URI만 지원 (data URL 미지원)
       try {
-        const dataUrl = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader()
-          reader.onload = () => resolve(reader.result as string)
-          reader.onerror = reject
-          reader.readAsDataURL(blob)
+        const base64 = await blobToBase64(blob)
+        const fileName = `gratitude-share-${Date.now()}.png`
+        await Filesystem.writeFile({
+          path: fileName,
+          data: base64,
+          directory: Directory.Cache,
+        })
+        const { uri } = await Filesystem.getUri({
+          path: fileName,
+          directory: Directory.Cache,
         })
         await Share.share({
           title: '감사일기',
           text: '오늘의 감사 일기를 공유합니다 🌿',
-          url: dataUrl,
+          files: [uri],
           dialogTitle: '공유하기',
         })
+        Filesystem.deleteFile({ path: fileName, directory: Directory.Cache }).catch(() => {})
         setShareNotice(null)
       } catch {
         // 사용자 취소 또는 공유 실패 — 무시
@@ -93,14 +114,21 @@ export function ShareCardModal({ note, streak = 0, onClose }: ShareCardModalProp
         // 사용자 취소 — 무시
       }
     } else {
-      // 파일 공유 미지원 (데스크탑 등) — 안내 메시지 표시
       setShareNotice('현재 브라우저에서는 이미지 직접 공유를 지원하지 않습니다. 이미지 저장 후 공유해주세요.')
     }
   }
 
-  function handleSave() {
+  async function handleSave() {
     const blob = blobRef.current
     if (!blob) return
+
+    if (isNative) {
+      // Android: 공유 시트를 통해 갤러리 앱에 저장 유도
+      setShareNotice('Android에서 이미지를 저장하려면 "이미지 공유" → 갤러리 앱을 선택하세요.')
+      return
+    }
+
+    // Web/PWA: anchor download
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
