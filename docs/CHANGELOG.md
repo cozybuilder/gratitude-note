@@ -36,6 +36,13 @@
 - `src/pages/SettingsPage.tsx` — Android + 권한 허용 시 "1분 뒤 테스트 알림 보내기" 버튼 표시 (진단용)
 - `src/components/ad/AdBanner.tsx` — HTML in-flow placeholder (광고 미노출, 컴포넌트 보존)
 - `src/pages/HomePage.tsx` — AdBanner 렌더링 제거 (v1.8.0 광고 미노출 결정)
+- `src/utils/shareCard.ts` — 공유 카드 레이아웃 전면 재설계
+  - 상단 2줄 태그라인: "오늘의 감사한 일을 공유해보세요." / "작은 감사가 누군가의 하루를 따뜻하게 만듭니다."
+  - 서브 슬로건 삽입: "하루 3개의 감사가 삶의 질을 바꿉니다" (구 섹션 헤더 삭제)
+  - 하단 홍보 문구 2줄 삭제 → URL만 남김 (`cozybuilder.co.kr/programs/r`, 32px)
+  - 모든 font-weight 700 제거, 본문 400 / 제목 최대 600
+  - 요소 간 최소 20-30px 여백 확보
+- `src/index.css` — body font-weight: 700 제거 (OnGel bold 뭉개짐 방지)
 - `src/utils/backup.ts` — BACKUP_VERSION 1.7.1 → 1.8.0
 - `android/app/build.gradle` — versionCode 3→4, versionName 1.7.1→1.8.0
 
