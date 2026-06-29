@@ -14,8 +14,6 @@ import {
   get10pmEnabled,
   set6pmEnabled,
   set10pmEnabled,
-  scheduleTestNotification,
-  isNativePlatform,
 } from '../utils/notification'
 import type { NotifPermStatus } from '../utils/notification'
 
@@ -41,7 +39,6 @@ export function SettingsPage() {
   const [notifPerm, setNotifPerm] = useState<NotifPermStatus>('default')
   const [notif6pm,  setNotif6pm]  = useState(() => get6pmEnabled())
   const [notif10pm, setNotif10pm] = useState(() => get10pmEnabled())
-  const [testNotifSent, setTestNotifSent] = useState(false)
 
   // 비동기로 실제 권한 상태 확인 (Android/Web 모두)
   useEffect(() => {
@@ -118,47 +115,35 @@ export function SettingsPage() {
         <section className="overflow-hidden rounded-2xl bg-white shadow-sm">
           <SectionHeader label="알림 설정" />
 
-          {/* 권한 상태 행 */}
-          <div className="flex items-center justify-between border-b border-warm-100 px-5 py-4">
-            <div className="flex items-center gap-3">
-              <span className="text-lg leading-none">🔔</span>
-              <div>
-                <p className="text-sm font-medium text-[#3d2e26]">감사일기 리마인더</p>
-                <p className="text-xs text-[#8a7570]">
-                  {notifPerm === 'granted'
-                    ? '미작성 시 아래 설정 시간에 알림을 발송합니다'
-                    : notifPerm === 'denied'
-                    ? '기기 설정에서 감사일기 알림을 허용해주세요'
-                    : notifPerm === 'unsupported'
-                    ? '이 환경에서는 알림이 지원되지 않습니다'
-                    : '알림을 허용하면 매일 감사 리마인더를 받을 수 있습니다'}
-                </p>
-              </div>
+          {/* 권한 미허용 시 안내 배너 */}
+          {notifPerm !== 'granted' && notifPerm !== 'unsupported' && (
+            <div className="flex items-center justify-between border-b border-warm-100 px-5 py-3">
+              <p className="text-xs text-[#8a7570]">
+                {notifPerm === 'denied'
+                  ? '기기 설정에서 감사일기 알림을 허용해주세요'
+                  : '알림을 허용하면 리마인더를 받을 수 있습니다'}
+              </p>
+              {notifPerm === 'default' && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const perm = await requestNotificationPermission()
+                    setNotifPerm(perm as NotifPermStatus)
+                  }}
+                  className="ml-3 shrink-0 rounded-full bg-primary-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary-600 transition-colors"
+                >
+                  허용하기
+                </button>
+              )}
             </div>
-            {notifPerm === 'granted' ? (
-              <span className="rounded-full bg-warm-100 px-2.5 py-0.5 text-xs font-medium text-primary-500">
-                허용됨
-              </span>
-            ) : notifPerm === 'default' ? (
-              <button
-                type="button"
-                onClick={async () => {
-                  const perm = await requestNotificationPermission()
-                  setNotifPerm(perm as NotifPermStatus)
-                }}
-                className="rounded-full bg-primary-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary-600 transition-colors"
-              >
-                허용하기
-              </button>
-            ) : null}
-          </div>
+          )}
 
           {/* 시간대별 체크박스 */}
           <div className="divide-y divide-warm-100">
             {/* 저녁 6시 알림 */}
             <label className="flex cursor-pointer items-center justify-between px-5 py-4 hover:bg-warm-50 transition-colors">
               <div className="flex items-center gap-3">
-                <span className="text-lg leading-none">🌇</span>
+                <span className="text-lg leading-none">🔔</span>
                 <div>
                   <p className="text-sm font-medium text-[#3d2e26]">저녁 6시 알림</p>
                   <p className="text-xs text-[#8a7570]">오후 6:00 — 저녁 감사 리마인더</p>
@@ -201,28 +186,6 @@ export function SettingsPage() {
           <p className="px-5 pb-4 pt-2 text-xs leading-relaxed text-[#8a7570]">
             ℹ️ 오늘 이미 기록을 작성한 경우 알림은 발송되지 않습니다.
           </p>
-
-          {/* 진단용 테스트 알림 — Android + 권한 허용 시에만 표시 */}
-          {isNativePlatform && notifPerm === 'granted' && (
-            <div className="border-t border-warm-100 px-5 py-3">
-              <button
-                type="button"
-                onClick={async () => {
-                  await scheduleTestNotification()
-                  setTestNotifSent(true)
-                  setTimeout(() => setTestNotifSent(false), 4000)
-                }}
-                className="w-full rounded-xl border border-warm-300 bg-warm-50 py-2.5 text-xs font-medium text-[#8a7570] hover:bg-warm-100 transition-colors"
-              >
-                🔔 1분 뒤 테스트 알림 보내기
-              </button>
-              {testNotifSent && (
-                <p className="mt-2 text-center text-xs text-primary-500">
-                  ✅ 1분 뒤 테스트 알림이 예약됐습니다. 앱을 닫아도 알림이 옵니다.
-                </p>
-              )}
-            </div>
-          )}
         </section>
 
         {/* ── 데이터 관리 (백업/복원) ────────────────────────────── */}

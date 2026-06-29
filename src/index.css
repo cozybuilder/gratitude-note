@@ -39,9 +39,9 @@
   box-sizing: border-box;
 }
 
-/* 교보손글씨 가독성: 베이스 크기 19px (+19%), 전체 700 */
+/* OnGel 가독성: 베이스 크기 20px */
 html {
-  font-size: 19px;
+  font-size: 20px;
 }
 
 body {
