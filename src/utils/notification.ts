@@ -237,3 +237,28 @@ export function getNotificationPermission(): NotifPermStatus {
   if (typeof Notification === 'undefined') return 'unsupported'
   return Notification.permission as NotifPermStatus
 }
+
+/** Android Native 여부 (SettingsPage 등에서 플랫폼 분기 용도) */
+export const isNativePlatform = isNative
+
+/**
+ * [진단용] 1분 뒤 테스트 알림 예약.
+ * Android Native 전용. 배포 후에는 버튼을 숨김 처리.
+ */
+export async function scheduleTestNotification(): Promise<void> {
+  if (!isNative) return
+  const at = new Date(Date.now() + 60 * 1000)
+  try {
+    await LocalNotifications.schedule({
+      notifications: [{
+        id: 9999,
+        title: '감사일기 테스트 알림',
+        body: '알림이 정상적으로 동작합니다 🌿',
+        schedule: { at, allowWhileIdle: true },
+        channelId: 'gratitude-reminder',
+      }],
+    })
+  } catch {
+    // 권한 없음 또는 스케줄 실패 무시
+  }
+}

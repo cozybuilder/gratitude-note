@@ -14,6 +14,8 @@ import {
   get10pmEnabled,
   set6pmEnabled,
   set10pmEnabled,
+  scheduleTestNotification,
+  isNativePlatform,
 } from '../utils/notification'
 import type { NotifPermStatus } from '../utils/notification'
 
@@ -39,6 +41,7 @@ export function SettingsPage() {
   const [notifPerm, setNotifPerm] = useState<NotifPermStatus>('default')
   const [notif6pm,  setNotif6pm]  = useState(() => get6pmEnabled())
   const [notif10pm, setNotif10pm] = useState(() => get10pmEnabled())
+  const [testNotifSent, setTestNotifSent] = useState(false)
 
   // 비동기로 실제 권한 상태 확인 (Android/Web 모두)
   useEffect(() => {
@@ -198,6 +201,28 @@ export function SettingsPage() {
           <p className="px-5 pb-4 pt-2 text-xs leading-relaxed text-[#8a7570]">
             ℹ️ 오늘 이미 기록을 작성한 경우 알림은 발송되지 않습니다.
           </p>
+
+          {/* 진단용 테스트 알림 — Android + 권한 허용 시에만 표시 */}
+          {isNativePlatform && notifPerm === 'granted' && (
+            <div className="border-t border-warm-100 px-5 py-3">
+              <button
+                type="button"
+                onClick={async () => {
+                  await scheduleTestNotification()
+                  setTestNotifSent(true)
+                  setTimeout(() => setTestNotifSent(false), 4000)
+                }}
+                className="w-full rounded-xl border border-warm-300 bg-warm-50 py-2.5 text-xs font-medium text-[#8a7570] hover:bg-warm-100 transition-colors"
+              >
+                🔔 1분 뒤 테스트 알림 보내기
+              </button>
+              {testNotifSent && (
+                <p className="mt-2 text-center text-xs text-primary-500">
+                  ✅ 1분 뒤 테스트 알림이 예약됐습니다. 앱을 닫아도 알림이 옵니다.
+                </p>
+              )}
+            </div>
+          )}
         </section>
 
         {/* ── 데이터 관리 (백업/복원) ────────────────────────────── */}

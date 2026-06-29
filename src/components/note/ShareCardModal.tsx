@@ -15,14 +15,13 @@ interface ShareCardModalProps {
 
 type Status = 'generating' | 'ready' | 'error'
 type CopyState = 'idle' | 'copied'
-type ShareNotice = null | string
 
 const SERVICE_URL = 'https://gratitude-note-theta.vercel.app/'
 
 export function ShareCardModal({ note, streak = 0, onClose }: ShareCardModalProps) {
   const [status, setStatus] = useState<Status>('generating')
   const [copyState, setCopyState] = useState<CopyState>('idle')
-  const [shareNotice, setShareNotice] = useState<ShareNotice>(null)
+  const [shareNotice, setShareNotice] = useState<string | null>(null)
   const blobRef = useRef<Blob | null>(null)
   const previewUrl = useRef<string | null>(null)
   const [imgUrl, setImgUrl] = useState<string | null>(null)
@@ -118,17 +117,10 @@ export function ShareCardModal({ note, streak = 0, onClose }: ShareCardModalProp
     }
   }
 
-  async function handleSave() {
+  function handleSave() {
     const blob = blobRef.current
     if (!blob) return
-
-    if (isNative) {
-      // Android: 공유 시트를 통해 갤러리 앱에 저장 유도
-      setShareNotice('Android에서 이미지를 저장하려면 "이미지 공유" → 갤러리 앱을 선택하세요.')
-      return
-    }
-
-    // Web/PWA: anchor download
+    // Web/PWA only — Android에서는 이 버튼이 표시되지 않음
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
@@ -204,44 +196,60 @@ export function ShareCardModal({ note, streak = 0, onClose }: ShareCardModalProp
         {/* 액션 버튼 */}
         {status === 'ready' && (
           <div className="flex flex-col gap-2 px-5">
-            {/* 이미지 공유 — 항상 표시 */}
-            <button
-              type="button"
-              onClick={handleShare}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary-500 py-3.5 text-sm font-semibold text-white hover:bg-primary-600 transition-colors"
-            >
-              <span>📤</span>
-              이미지 공유
-            </button>
+            {isNative ? (
+              /* Android Native: 단일 공유 버튼 */
+              <>
+                <p className="text-center text-xs text-[#8a7570]">
+                  카카오톡, 인스타그램, 갤러리 등으로 이미지를 바로 공유할 수 있습니다.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleShare}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary-500 py-3.5 text-sm font-semibold text-white hover:bg-primary-600 transition-colors"
+                >
+                  <span>📤</span>
+                  이미지 공유
+                </button>
+              </>
+            ) : (
+              /* Web/PWA: 공유 + 저장 + 링크 복사 */
+              <>
+                <button
+                  type="button"
+                  onClick={handleShare}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary-500 py-3.5 text-sm font-semibold text-white hover:bg-primary-600 transition-colors"
+                >
+                  <span>📤</span>
+                  이미지 공유
+                </button>
 
-            {/* 미지원 안내 메시지 */}
-            {shareNotice && (
-              <p className="rounded-xl bg-warm-100 px-4 py-2.5 text-xs leading-relaxed text-[#8a7570]">
-                ℹ️ {shareNotice}
-              </p>
+                {shareNotice && (
+                  <p className="rounded-xl bg-warm-100 px-4 py-2.5 text-xs leading-relaxed text-[#8a7570]">
+                    ℹ️ {shareNotice}
+                  </p>
+                )}
+
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={handleSave}
+                    className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-warm-300 bg-warm-50 py-3 text-sm font-medium text-[#3d2e26] hover:bg-warm-100 transition-colors"
+                  >
+                    <span>⬇️</span>
+                    이미지 저장
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleCopyLink}
+                    className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-warm-300 bg-warm-50 py-3 text-sm font-medium text-[#3d2e26] hover:bg-warm-100 transition-colors"
+                  >
+                    <span>{copyState === 'copied' ? '✅' : '🔗'}</span>
+                    {copyState === 'copied' ? '복사됨' : '링크 복사'}
+                  </button>
+                </div>
+              </>
             )}
-
-            <div className="flex gap-2">
-              {/* 이미지 저장 */}
-              <button
-                type="button"
-                onClick={handleSave}
-                className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-warm-300 bg-warm-50 py-3 text-sm font-medium text-[#3d2e26] hover:bg-warm-100 transition-colors"
-              >
-                <span>⬇️</span>
-                이미지 저장
-              </button>
-
-              {/* 링크 복사 */}
-              <button
-                type="button"
-                onClick={handleCopyLink}
-                className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-warm-300 bg-warm-50 py-3 text-sm font-medium text-[#3d2e26] hover:bg-warm-100 transition-colors"
-              >
-                <span>{copyState === 'copied' ? '✅' : '🔗'}</span>
-                {copyState === 'copied' ? '복사됨' : '링크 복사'}
-              </button>
-            </div>
           </div>
         )}
 
