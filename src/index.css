@@ -40,10 +40,16 @@
   box-sizing: border-box;
 }
 
+/* 교보손글씨 가독성: 베이스 크기 19px (+19%), 전체 700 */
+html {
+  font-size: 19px;
+}
+
 body {
   margin: 0;
   background-color: #fffdf9;
   font-family: 'KyoboHandwriting2025lyb', system-ui, -apple-system, sans-serif;
+  font-weight: 700;
   -webkit-font-smoothing: antialiased;
 }
 

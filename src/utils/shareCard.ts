@@ -295,7 +295,7 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
   // ── 7. 메인 태그라인 ──────────────────────────────────────────────────────────
   ctx.textAlign = 'center'
   ctx.fillStyle = C.orange
-  ctx.font = `500 42px ${FONT_KYOBO}`
+  ctx.font = `700 50px ${FONT_KYOBO}`
   ctx.fillText('하루 3개의 감사가 삶의 질을 바꿉니다', W / 2, CY + 236)
 
   // ── 8. 장식 점 ───────────────────────────────────────────────────────────────
@@ -311,7 +311,7 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
   const dateStr = '☀️  ' + new Date(y, m - 1, d).toLocaleDateString('ko-KR', {
     year: 'numeric', month: 'long', day: 'numeric', weekday: 'long',
   })
-  ctx.font = `400 34px ${FONT_KYOBO}`
+  ctx.font = `700 40px ${FONT_KYOBO}`
   const dateW = ctx.measureText(dateStr).width + 64
   const pillX = (W - dateW) / 2
   const pillY = CY + 284
@@ -328,21 +328,21 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
 
   // ── 10. 섹션 헤더 ────────────────────────────────────────────────────────────
   ctx.fillStyle = C.warmMute
-  ctx.font = `500 36px ${FONT_KYOBO}`
+  ctx.font = `700 44px ${FONT_KYOBO}`
   ctx.fillText('오늘 감사한 일 3가지', W / 2, CY + 402)
 
   // ─────────────────────────────────────────────────────────────────────────────
   // 11. 감사 항목 — ROW_H=160, 폰트 36px, 최대 2줄 래핑
   // ─────────────────────────────────────────────────────────────────────────────
 
-  const ROW_H  = 160
+  const ROW_H  = 170
   const ROW_G  = 12
-  const BRAD   = 28
+  const BRAD   = 30
   const BADGE_CX = cX + BRAD + 4
   const TEXT_X   = cX + BRAD * 2 + 28
   const TEXT_W   = cW - BRAD * 2 - 32
-  const TEXT_FONT = 36
-  const LINE_H   = 44
+  const TEXT_FONT = 42
+  const LINE_H   = 50
 
   const gratitudes = [note.gratitude1, note.gratitude2, note.gratitude3]
   let rowY = CY + 430
@@ -366,8 +366,8 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
 
     ctx.fillStyle = '#FFFCF5'
     ctx.textAlign = 'center'
-    ctx.font = `700 30px ${FONT_KYOBO}`
-    ctx.fillText(String(i + 1), BADGE_CX, bcy + 11)
+    ctx.font = `700 34px ${FONT_KYOBO}`
+    ctx.fillText(String(i + 1), BADGE_CX, bcy + 12)
 
     ctx.textAlign = 'left'
     ctx.font = `400 ${TEXT_FONT}px ${FONT_KYOBO}`
@@ -389,7 +389,7 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
   const moodText = `오늘의 기분   ${mood.emoji}  ${mood.label}`
   const moodTop = rowY + 18
 
-  ctx.font = `400 36px ${FONT_KYOBO}`
+  ctx.font = `700 42px ${FONT_KYOBO}`
   const mpW = ctx.measureText(moodText).width + 76
   const mpX = (W - mpW) / 2
 
@@ -406,7 +406,7 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
 
   // ── 13. 하단 구분선 ───────────────────────────────────────────────────────────
   const cardBottom = CY + CH          // 1290
-  const sepY       = cardBottom - 220 // 220px 여유 — 배지+스트릭+홍보+URL
+  const sepY       = cardBottom - 190 // 190px 여유 — 배지+스트릭+홍보+URL
 
   ctx.setLineDash([5, 9])
   ctx.strokeStyle = 'rgba(224, 123, 79, 0.24)'
@@ -422,7 +422,7 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
 
   if (badgeInfo.isLegend) {
     const legendText = `${badgeInfo.emoji}  ${badgeInfo.label}`
-    ctx.font = `600 40px ${FONT_KYOBO}`
+    ctx.font = `700 46px ${FONT_KYOBO}`
     const lw = ctx.measureText(legendText).width + 72
     const lx = (W - lw) / 2
     const ly = sepY + 12
@@ -440,14 +440,14 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
     ctx.fillText(legendText, W / 2, ly + 36)
   } else {
     ctx.fillStyle = C.warmMid
-    ctx.font = `600 40px ${FONT_KYOBO}`
+    ctx.font = `700 46px ${FONT_KYOBO}`
     ctx.textAlign = 'center'
     ctx.fillText(`${badgeInfo.emoji}  ${badgeInfo.label}`, W / 2, sepY + 44)
   }
 
   // 연속 기록 서브 텍스트
   ctx.fillStyle = badgeInfo.isLegend ? C.goldLight : C.warmMute
-  ctx.font = `400 30px ${FONT_KYOBO}`
+  ctx.font = `700 36px ${FONT_KYOBO}`
   ctx.fillText(badgeInfo.streakLine, W / 2, sepY + 92)
 
   // ── 15. 홍보 문구 ─────────────────────────────────────────────────────────────
