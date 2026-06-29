@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { BottomNav } from './components/layout/BottomNav'
-import { AdBanner } from './components/ad/AdBanner'
 import { HomePage } from './pages/HomePage'
 import { ListPage } from './pages/ListPage'
 import { CalendarPage } from './pages/CalendarPage'
@@ -65,8 +64,6 @@ function App() {
           </Routes>
         </main>
         <BottomNav />
-        {/* AdMob 배너 높이 확보 — native 환경에서만 렌더링됨 */}
-        <AdBanner />
       </div>
     </BrowserRouter>
   )

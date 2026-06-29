@@ -6,6 +6,7 @@ import { AiMessageCard } from '../components/note/AiMessageCard'
 import { ShareCardModal } from '../components/note/ShareCardModal'
 import { BadgeCelebrationModal } from '../components/badge/BadgeCelebrationModal'
 import { HeroBanner } from '../components/note/HeroBanner'
+import { AdBanner } from '../components/ad/AdBanner'
 import { useNotes } from '../hooks/useNotes'
 import { useStreak } from '../hooks/useStreak'
 import { useAchievements } from '../hooks/useAchievements'
@@ -92,6 +93,11 @@ export function HomePage() {
       {/* ② Hero 배너 이미지 — 항상 표시, todayNote 여부 무관 */}
       <div className="pt-2">
         <HeroBanner />
+      </div>
+
+      {/* 광고 — HeroBanner 아래 인라인 배치, 콘텐츠 흐름 안에 위치 */}
+      <div className="pt-3">
+        <AdBanner />
       </div>
 
       {/* ③④⑤ 날짜+배지 · 다음배지카드 · 감사폼/기록카드 */}
