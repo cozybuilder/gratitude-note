@@ -24,7 +24,7 @@ export function CalendarPage() {
   return (
     <div>
       <Header title="캘린더" streak={streak} />
-      <div className="flex flex-col gap-4 px-5 pb-28">
+      <div className="flex flex-col gap-4 px-5 pb-32">
 
         {/* 연속 작성일 요약 */}
         <div className="flex items-center gap-3 rounded-2xl bg-white px-5 py-4 shadow-sm">

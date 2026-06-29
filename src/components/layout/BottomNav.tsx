@@ -1,4 +1,7 @@
 import { NavLink } from 'react-router-dom'
+import { Capacitor } from '@capacitor/core'
+
+const isNative = Capacitor.isNativePlatform()
 
 const tabs = [
   { to: '/',          label: '홈',    icon: HomeIcon },
@@ -10,7 +13,7 @@ const tabs = [
 
 export function BottomNav() {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 flex justify-center border-t border-warm-200 bg-warm-50">
+    <nav className={`fixed left-0 right-0 z-40 flex justify-center border-t border-warm-200 bg-warm-50 ${isNative ? 'bottom-[60px]' : 'bottom-0'}`}>
       <ul className="flex w-full max-w-md">
         {tabs.map(({ to, label, icon: Icon }) => (
           <li key={to} className="flex-1">

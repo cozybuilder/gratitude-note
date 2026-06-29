@@ -32,7 +32,7 @@ export function StatsPage() {
         </div>
       </header>
 
-      <div className="flex flex-col gap-4 px-5 pb-28 pt-0">
+      <div className="flex flex-col gap-4 px-5 pb-32 pt-0">
         <StreakBadge streak={streak} />
         <StatsView notes={notes} streak={streak} />
       </div>

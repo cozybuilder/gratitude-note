@@ -11,7 +11,7 @@ export function ListPage() {
   return (
     <div>
       <Header title="기록" streak={streak} />
-      <div className="flex flex-col gap-3 px-5 pb-28">
+      <div className="flex flex-col gap-3 px-5 pb-32">
         {notes.length === 0 ? (
           <EmptyState
             title="아직 작성한 기록이 없어요"

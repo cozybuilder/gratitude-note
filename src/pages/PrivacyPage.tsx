@@ -19,7 +19,7 @@ export function PrivacyPage() {
       </header>
 
       {/* 본문 */}
-      <div className="flex flex-col gap-6 px-5 py-6 pb-28 text-[#3d2e26]">
+      <div className="flex flex-col gap-6 px-5 py-6 pb-32 text-[#3d2e26]">
 
         <section>
           <p className="text-sm leading-relaxed text-[#8a7570]">

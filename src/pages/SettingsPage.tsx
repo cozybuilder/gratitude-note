@@ -84,7 +84,7 @@ export function SettingsPage() {
   return (
     <div>
       <Header title="설정" />
-      <div className="flex flex-col gap-4 px-5 pb-28 pt-2">
+      <div className="flex flex-col gap-4 px-5 pb-32 pt-2">
 
         {/* ── 테마 설정 ──────────────────────────────────────────── */}
         <section className="overflow-hidden rounded-2xl bg-white shadow-sm">

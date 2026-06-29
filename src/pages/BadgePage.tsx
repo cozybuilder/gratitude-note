@@ -47,7 +47,7 @@ export function BadgePage() {
         <h1 className="text-base font-semibold text-[#3d2e26]">배지</h1>
       </header>
 
-      <div className="flex flex-col gap-5 px-5 py-5 pb-28">
+      <div className="flex flex-col gap-5 px-5 py-5 pb-32">
 
         {/* ── 1. 내 업적 배지 ───────────────────────────────────── */}
         <section className="rounded-2xl bg-white px-5 py-4 shadow-sm">

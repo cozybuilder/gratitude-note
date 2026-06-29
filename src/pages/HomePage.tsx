@@ -4,7 +4,6 @@ import { Header } from '../components/layout/Header'
 import { NoteForm, GRATITUDE_MAX_CHARS } from '../components/note/NoteForm'
 import { AiMessageCard } from '../components/note/AiMessageCard'
 import { ShareCardModal } from '../components/note/ShareCardModal'
-import { AdBanner } from '../components/ad/AdBanner'
 import { BadgeCelebrationModal } from '../components/badge/BadgeCelebrationModal'
 import { HeroBanner } from '../components/note/HeroBanner'
 import { useNotes } from '../hooks/useNotes'
@@ -82,11 +81,6 @@ export function HomePage() {
 
       {/* ① 헤더: 오늘의 감사 + 🔥 N일 연속 */}
       <Header title="오늘의 감사" streak={streak} />
-
-      {/* 광고 — BottomNav 위 고정 */}
-      <div className="fixed bottom-16 inset-x-0 z-30 mx-auto w-full max-w-md">
-        <AdBanner />
-      </div>
 
       {/* AI 응원 메시지 (감사 저장 직후에만 일시 노출) */}
       {aiMessage && (

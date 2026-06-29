@@ -31,7 +31,7 @@ async function showBanner() {
       adId: ADMOB_BANNER_ID,
       adSize: BannerAdSize.ADAPTIVE_BANNER,
       position: BannerAdPosition.BOTTOM_CENTER,
-      margin: 56, // BottomNav 높이만큼 위로 띄움 (px)
+      margin: 0, // 화면 최하단 고정 — BottomNav가 광고 위에 위치
       isTesting: IS_TESTING,
     })
   } catch {
