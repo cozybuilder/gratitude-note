@@ -1,3 +1,4 @@
+import QRCode from 'qrcode'
 import type { Note, Mood } from '../types/note'
 import { ACHIEVEMENT_BADGES } from './achievement'
 
@@ -5,7 +6,8 @@ import { ACHIEVEMENT_BADGES } from './achievement'
 
 const W = 1080
 const H = 1350
-const SERVICE_URL = 'gratitude-note-theta.vercel.app'
+const SERVICE_URL   = 'cozybuilder.co.kr'
+const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.cozybuilder.gratitudediary'
 
 type Season = 'spring' | 'summer' | 'autumn' | 'winter'
 
@@ -36,6 +38,26 @@ const C = {
   itemBg:     'rgba(255, 242, 228, 0.75)',
   gold:       '#B45309',
   goldLight:  '#D97706',
+}
+
+// ─── 폰트 ────────────────────────────────────────────────────────────────────
+
+const FONT_KYOBO = "'KyoboHandwriting2025lyb', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif"
+let fontLoaded = false
+
+async function ensureFont(): Promise<void> {
+  if (fontLoaded) return
+  try {
+    const face = new FontFace(
+      'KyoboHandwriting2025lyb',
+      'url(/font/KyoboHandwriting2025lyb.ttf) format("truetype"), url(/font/KyoboHandwriting2025lyb.otf) format("opentype")'
+    )
+    await face.load()
+    document.fonts.add(face)
+    fontLoaded = true
+  } catch {
+    // 폰트 로드 실패 시 fallback 폰트로 계속 진행
+  }
 }
 
 // ─── 배지 헬퍼 ────────────────────────────────────────────────────────────────
@@ -150,19 +172,35 @@ function wrapLines(
   return lines
 }
 
+// ─── QR 코드 생성 ─────────────────────────────────────────────────────────────
+
+async function generateQRCanvas(size: number): Promise<HTMLCanvasElement> {
+  const qrCanvas = document.createElement('canvas')
+  await QRCode.toCanvas(qrCanvas, PLAY_STORE_URL, {
+    width: size,
+    margin: 1,
+    color: { dark: '#3d2e26', light: '#FFFCF5' },
+  })
+  return qrCanvas
+}
+
 // ─── 메인 생성 함수 ────────────────────────────────────────────────────────────
 
 export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
+  // 폰트·이미지·QR 병렬 준비
+  const [, [heroImg, iconImg], qrCanvas] = await Promise.all([
+    ensureFont(),
+    Promise.all([
+      loadImage(SEASON_IMAGES[getCurrentSeason()]),
+      loadImage('/icons/icon-192x192.png').catch(() => null as HTMLImageElement | null),
+    ]),
+    generateQRCanvas(144),
+  ])
+
   const canvas = document.createElement('canvas')
   canvas.width = W
   canvas.height = H
   const ctx = canvas.getContext('2d')!
-
-  // ── 배경·아이콘 이미지 병렬 로드 ─────────────────────────────────────────────
-  const [heroImg, iconImg] = await Promise.all([
-    loadImage(SEASON_IMAGES[getCurrentSeason()]),
-    loadImage('/icons/icon-192x192.png').catch(() => null as HTMLImageElement | null),
-  ])
 
   // ── 1. Hero 배경 ─────────────────────────────────────────────────────────────
   const scale = Math.max(W / heroImg.width, H / heroImg.height)
@@ -216,36 +254,54 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
   const cW = CW - PAD * 2
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // 6. 앱 아이콘 — 20~30% 확대(88→112px), 브랜드 로고 느낌
+  // 6. 앱 아이콘(왼쪽) + QR 코드(오른쪽) — 나란히 배치
   // ─────────────────────────────────────────────────────────────────────────────
-  const ICON_SIZE = 144                // 기존 112 → 144 (+29%)
-  const ICON_X = W / 2 - ICON_SIZE / 2
-  const ICON_Y = CY + 44              // 카드 상단에서 44px
+  const ICON_SIZE = 144
+  const QR_SIZE   = 144
+  const PAIR_GAP  = 40
+  const PAIR_W    = ICON_SIZE + PAIR_GAP + QR_SIZE   // 328
+  const ICON_X    = (W - PAIR_W) / 2                 // 376
+  const QR_X      = ICON_X + ICON_SIZE + PAIR_GAP    // 560
+  const PAIR_Y    = CY + 44
 
+  // 앱 아이콘
   if (iconImg) {
     ctx.save()
-    roundRectPath(ctx, ICON_X, ICON_Y, ICON_SIZE, ICON_SIZE, 28)
+    roundRectPath(ctx, ICON_X, PAIR_Y, ICON_SIZE, ICON_SIZE, 28)
     ctx.clip()
-    ctx.drawImage(iconImg, ICON_X, ICON_Y, ICON_SIZE, ICON_SIZE)
+    ctx.drawImage(iconImg, ICON_X, PAIR_Y, ICON_SIZE, ICON_SIZE)
     ctx.restore()
 
-    roundRectPath(ctx, ICON_X, ICON_Y, ICON_SIZE, ICON_SIZE, 28)
+    roundRectPath(ctx, ICON_X, PAIR_Y, ICON_SIZE, ICON_SIZE, 28)
     ctx.strokeStyle = 'rgba(224, 123, 79, 0.22)'
     ctx.lineWidth = 1.5
     ctx.stroke()
   }
 
-  // ── 7. 메인 태그라인 — 1줄, 주홍색, 부드러운 슬로건 ────────────────────────
-  // 아이콘 하단(CY+44+144=CY+188)에서 48px gap → 기준선 CY+236
+  // QR 코드 — 흰 배경 + 모서리 둥글게
+  ctx.save()
+  roundRectPath(ctx, QR_X, PAIR_Y, QR_SIZE, QR_SIZE, 16)
+  ctx.fillStyle = '#FFFCF5'
+  ctx.fill()
+  ctx.clip()
+  ctx.drawImage(qrCanvas, QR_X, PAIR_Y, QR_SIZE, QR_SIZE)
+  ctx.restore()
+
+  roundRectPath(ctx, QR_X, PAIR_Y, QR_SIZE, QR_SIZE, 16)
+  ctx.strokeStyle = 'rgba(224, 123, 79, 0.22)'
+  ctx.lineWidth = 1.5
+  ctx.stroke()
+
+  // ── 7. 메인 태그라인 ──────────────────────────────────────────────────────────
   ctx.textAlign = 'center'
   ctx.fillStyle = C.orange
-  ctx.font = `500 42px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
-  ctx.fillText('하루 3개의 감사가 삶의 질을 바꿉니다', W / 2, CY + 236) // 기존 +204 → +236
+  ctx.font = `500 42px ${FONT_KYOBO}`
+  ctx.fillText('하루 3개의 감사가 삶의 질을 바꿉니다', W / 2, CY + 236)
 
   // ── 8. 장식 점 ───────────────────────────────────────────────────────────────
   ;[-20, 0, 20].forEach((dx) => {
     ctx.beginPath()
-    ctx.arc(W / 2 + dx, CY + 264, 4, 0, Math.PI * 2) // 기존 +232 → +264
+    ctx.arc(W / 2 + dx, CY + 264, 4, 0, Math.PI * 2)
     ctx.fillStyle = 'rgba(224, 123, 79, 0.40)'
     ctx.fill()
   })
@@ -255,10 +311,10 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
   const dateStr = '☀️  ' + new Date(y, m - 1, d).toLocaleDateString('ko-KR', {
     year: 'numeric', month: 'long', day: 'numeric', weekday: 'long',
   })
-  ctx.font = `400 34px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
+  ctx.font = `400 34px ${FONT_KYOBO}`
   const dateW = ctx.measureText(dateStr).width + 64
   const pillX = (W - dateW) / 2
-  const pillY = CY + 284              // 기존 +252 → +284 (아이콘 +32px 반영)
+  const pillY = CY + 284
 
   roundRectPath(ctx, pillX, pillY, dateW, 54, 27)
   ctx.fillStyle = 'rgba(224, 123, 79, 0.09)'
@@ -272,11 +328,11 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
 
   // ── 10. 섹션 헤더 ────────────────────────────────────────────────────────────
   ctx.fillStyle = C.warmMute
-  ctx.font = `500 36px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
-  ctx.fillText('오늘 감사한 일 3가지', W / 2, CY + 402) // 기존 +370 → +402
+  ctx.font = `500 36px ${FONT_KYOBO}`
+  ctx.fillText('오늘 감사한 일 3가지', W / 2, CY + 402)
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // 감사 항목 — ROW_H=160, 폰트 36px, 최대 2줄 래핑
+  // 11. 감사 항목 — ROW_H=160, 폰트 36px, 최대 2줄 래핑
   // ─────────────────────────────────────────────────────────────────────────────
 
   const ROW_H  = 160
@@ -289,7 +345,7 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
   const LINE_H   = 44
 
   const gratitudes = [note.gratitude1, note.gratitude2, note.gratitude3]
-  let rowY = CY + 430                               // 기존 +398 → +430 (아이콘 +32px 반영)
+  let rowY = CY + 430
 
   for (let i = 0; i < gratitudes.length; i++) {
     const g = gratitudes[i].trim()
@@ -310,11 +366,11 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
 
     ctx.fillStyle = '#FFFCF5'
     ctx.textAlign = 'center'
-    ctx.font = `700 30px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
+    ctx.font = `700 30px ${FONT_KYOBO}`
     ctx.fillText(String(i + 1), BADGE_CX, bcy + 11)
 
     ctx.textAlign = 'left'
-    ctx.font = `400 ${TEXT_FONT}px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
+    ctx.font = `400 ${TEXT_FONT}px ${FONT_KYOBO}`
     const textLines = wrapLines(ctx, g, TEXT_W, 2)
 
     const totalTextH = (textLines.length - 1) * LINE_H
@@ -333,7 +389,7 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
   const moodText = `오늘의 기분   ${mood.emoji}  ${mood.label}`
   const moodTop = rowY + 18
 
-  ctx.font = `400 36px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
+  ctx.font = `400 36px ${FONT_KYOBO}`
   const mpW = ctx.measureText(moodText).width + 76
   const mpX = (W - mpW) / 2
 
@@ -349,9 +405,8 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
   ctx.fillText(moodText, W / 2, moodTop + 38)
 
   // ── 13. 하단 구분선 ───────────────────────────────────────────────────────────
-  // 감성 문구 제거로 하단 섹션 220→180px 압축
   const cardBottom = CY + CH          // 1290
-  const sepY       = cardBottom - 180 // 기존 -220 → -180
+  const sepY       = cardBottom - 220 // 220px 여유 — 배지+스트릭+홍보+URL
 
   ctx.setLineDash([5, 9])
   ctx.strokeStyle = 'rgba(224, 123, 79, 0.24)'
@@ -367,7 +422,7 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
 
   if (badgeInfo.isLegend) {
     const legendText = `${badgeInfo.emoji}  ${badgeInfo.label}`
-    ctx.font = `600 40px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
+    ctx.font = `600 40px ${FONT_KYOBO}`
     const lw = ctx.measureText(legendText).width + 72
     const lx = (W - lw) / 2
     const ly = sepY + 12
@@ -385,20 +440,26 @@ export async function generateShareCard(note: Note, streak = 0): Promise<Blob> {
     ctx.fillText(legendText, W / 2, ly + 36)
   } else {
     ctx.fillStyle = C.warmMid
-    ctx.font = `600 40px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
+    ctx.font = `600 40px ${FONT_KYOBO}`
     ctx.textAlign = 'center'
     ctx.fillText(`${badgeInfo.emoji}  ${badgeInfo.label}`, W / 2, sepY + 44)
   }
 
-  // 연속 기록 서브 텍스트 — 배지명과 8~12px 여백 추가
+  // 연속 기록 서브 텍스트
   ctx.fillStyle = badgeInfo.isLegend ? C.goldLight : C.warmMute
-  ctx.font = `400 30px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
-  ctx.fillText(badgeInfo.streakLine, W / 2, sepY + 94) // 기존 +82 → +94 (+12px 여백)
+  ctx.font = `400 30px ${FONT_KYOBO}`
+  ctx.fillText(badgeInfo.streakLine, W / 2, sepY + 92)
 
-  // ── 15. URL ──────────────────────────────────────────────────────────────────
+  // ── 15. 홍보 문구 ─────────────────────────────────────────────────────────────
+  ctx.fillStyle = 'rgba(154, 123, 110, 0.75)'
+  ctx.font = `400 26px ${FONT_KYOBO}`
+  ctx.fillText('오늘의 감사한 일을 공유해보세요.', W / 2, sepY + 136)
+  ctx.fillText('작은 감사가 누군가의 하루를 따뜻하게 만듭니다.', W / 2, sepY + 166)
+
+  // ── 16. URL ──────────────────────────────────────────────────────────────────
   ctx.fillStyle = C.warmMute
-  ctx.font = `400 24px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif`
-  ctx.fillText(SERVICE_URL, W / 2, sepY + 142)    // 기존 +130 → +142 (streak 이동 반영)
+  ctx.font = `400 22px ${FONT_KYOBO}`
+  ctx.fillText(SERVICE_URL, W / 2, sepY + 200)
 
   // ── 반환 ──────────────────────────────────────────────────────────────────────
   return new Promise((resolve, reject) => {

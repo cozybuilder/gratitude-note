@@ -7,6 +7,9 @@ import { generateShareCard } from '../../utils/shareCard'
 
 const isNative = Capacitor.isNativePlatform()
 
+const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.cozybuilder.gratitudediary'
+const SHARE_TEXT = `🌱 감사일기 함께 시작해요.\n\n매일 감사한 일 3가지를 기록하는 무료 앱입니다.\n\n지금 다운로드:\n${PLAY_STORE_URL}`
+
 interface ShareCardModalProps {
   note: Note
   streak?: number
@@ -15,8 +18,6 @@ interface ShareCardModalProps {
 
 type Status = 'generating' | 'ready' | 'error'
 type CopyState = 'idle' | 'copied'
-
-const SERVICE_URL = 'https://gratitude-note-theta.vercel.app/'
 
 export function ShareCardModal({ note, streak = 0, onClose }: ShareCardModalProps) {
   const [status, setStatus] = useState<Status>('generating')
@@ -53,89 +54,91 @@ export function ShareCardModal({ note, streak = 0, onClose }: ShareCardModalProp
     }
   }, [note, streak])
 
-  // ── 공유 액션 ─────────────────────────────────────────────────────────────────
+  // ── blob → base64 유틸 ────────────────────────────────────────────────────────
 
-  // blob → base64 문자열 변환 유틸
   function blobToBase64(blob: Blob): Promise<string> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader()
-      reader.onload = () => {
-        const result = reader.result as string
-        resolve(result.split(',')[1]) // data:image/png;base64, 이후 부분만
-      }
+      reader.onload = () => resolve((reader.result as string).split(',')[1])
       reader.onerror = reject
       reader.readAsDataURL(blob)
     })
   }
+
+  // ── 이미지 공유 ───────────────────────────────────────────────────────────────
 
   async function handleShare() {
     const blob = blobRef.current
     if (!blob) return
 
     if (isNative) {
-      // Android Native: 캐시 임시 파일 저장 → 시스템 공유 시트
-      // Share.share()는 HTTP URL 또는 로컬 file URI만 지원 (data URL 미지원)
       try {
         const base64 = await blobToBase64(blob)
         const fileName = `gratitude-share-${Date.now()}.png`
-        await Filesystem.writeFile({
-          path: fileName,
-          data: base64,
-          directory: Directory.Cache,
-        })
-        const { uri } = await Filesystem.getUri({
-          path: fileName,
-          directory: Directory.Cache,
-        })
+        await Filesystem.writeFile({ path: fileName, data: base64, directory: Directory.Cache })
+        const { uri } = await Filesystem.getUri({ path: fileName, directory: Directory.Cache })
+        // 이미지 + 텍스트 함께 공유 시도 (일부 앱에서 텍스트 생략될 수 있음)
         await Share.share({
           title: '감사일기',
-          text: '오늘의 감사 일기를 공유합니다 🌿',
+          text: SHARE_TEXT,
           files: [uri],
           dialogTitle: '공유하기',
         })
         Filesystem.deleteFile({ path: fileName, directory: Directory.Cache }).catch(() => {})
         setShareNotice(null)
       } catch {
-        // 사용자 취소 또는 공유 실패 — 무시
+        // 사용자 취소 또는 공유 실패
       }
       return
     }
 
-    // Web/PWA: Web Share API (파일 공유 지원 브라우저)
+    // Web/PWA: Web Share API
     const file = new File([blob], `감사일기-${note.gratitudeDate}.png`, { type: 'image/png' })
-    const shareData = { files: [file], title: '감사일기', text: '오늘의 감사 일기를 공유합니다 🌿' }
+    const shareData = { files: [file], title: '감사일기', text: SHARE_TEXT }
 
     if (navigator.canShare?.(shareData)) {
       try {
         await navigator.share(shareData)
         setShareNotice(null)
       } catch {
-        // 사용자 취소 — 무시
+        // 사용자 취소
       }
     } else {
-      setShareNotice('현재 브라우저에서는 이미지 직접 공유를 지원하지 않습니다. 이미지 저장 후 공유해주세요.')
+      setShareNotice('현재 브라우저에서는 이미지 직접 공유를 지원하지 않습니다.')
     }
   }
 
-  function handleSave() {
-    const blob = blobRef.current
-    if (!blob) return
-    // Web/PWA only — Android에서는 이 버튼이 표시되지 않음
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `감사일기-${note.gratitudeDate}.png`
-    a.click()
-    setTimeout(() => URL.revokeObjectURL(url), 1000)
-  }
+  // ── 링크 공유 ─────────────────────────────────────────────────────────────────
 
-  async function handleCopyLink() {
+  async function handleShareLink() {
+    if (isNative) {
+      try {
+        await Share.share({
+          title: '감사일기',
+          text: SHARE_TEXT,
+          dialogTitle: '링크 공유하기',
+        })
+      } catch {
+        // 사용자 취소
+      }
+      return
+    }
+
+    // Web: navigator.share 또는 클립보드 복사
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: '감사일기', text: SHARE_TEXT })
+        return
+      } catch {
+        // 취소 시 클립보드 폴백
+      }
+    }
     try {
-      await navigator.clipboard.writeText(SERVICE_URL)
+      await navigator.clipboard.writeText(SHARE_TEXT)
       setCopyState('copied')
       setTimeout(() => setCopyState('idle'), 2000)
     } catch {
-      // clipboard 미지원 시 무시
+      // clipboard 미지원
     }
   }
 
@@ -173,7 +176,6 @@ export function ShareCardModal({ note, streak = 0, onClose }: ShareCardModalProp
           {status === 'generating' && (
             <div className="flex h-full items-center justify-center">
               <div className="flex flex-col items-center gap-3">
-                {/* 스피너 */}
                 <div className="h-10 w-10 animate-spin rounded-full border-4 border-warm-300 border-t-primary-500" />
                 <p className="text-sm text-[#8a7570]">카드 생성 중...</p>
               </div>
@@ -196,59 +198,38 @@ export function ShareCardModal({ note, streak = 0, onClose }: ShareCardModalProp
         {/* 액션 버튼 */}
         {status === 'ready' && (
           <div className="flex flex-col gap-2 px-5">
-            {isNative ? (
-              /* Android Native: 단일 공유 버튼 */
-              <>
-                <p className="text-center text-xs text-[#8a7570]">
-                  카카오톡, 인스타그램, 갤러리 등으로 이미지를 바로 공유할 수 있습니다.
-                </p>
-                <button
-                  type="button"
-                  onClick={handleShare}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary-500 py-3.5 text-sm font-semibold text-white hover:bg-primary-600 transition-colors"
-                >
-                  <span>📤</span>
-                  이미지 공유
-                </button>
-              </>
-            ) : (
-              /* Web/PWA: 공유 + 저장 + 링크 복사 */
-              <>
-                <button
-                  type="button"
-                  onClick={handleShare}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary-500 py-3.5 text-sm font-semibold text-white hover:bg-primary-600 transition-colors"
-                >
-                  <span>📤</span>
-                  이미지 공유
-                </button>
+            {isNative && (
+              <p className="text-center text-xs text-[#8a7570]">
+                카카오톡, 인스타그램, 갤러리 등으로 이미지를 바로 공유할 수 있습니다.
+              </p>
+            )}
 
-                {shareNotice && (
-                  <p className="rounded-xl bg-warm-100 px-4 py-2.5 text-xs leading-relaxed text-[#8a7570]">
-                    ℹ️ {shareNotice}
-                  </p>
-                )}
+            <div className="flex gap-2">
+              {/* 이미지 공유 */}
+              <button
+                type="button"
+                onClick={handleShare}
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary-500 py-3.5 text-sm font-semibold text-white hover:bg-primary-600 transition-colors"
+              >
+                <span>📤</span>
+                이미지 공유
+              </button>
 
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={handleSave}
-                    className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-warm-300 bg-warm-50 py-3 text-sm font-medium text-[#3d2e26] hover:bg-warm-100 transition-colors"
-                  >
-                    <span>⬇️</span>
-                    이미지 저장
-                  </button>
+              {/* 링크 공유 */}
+              <button
+                type="button"
+                onClick={handleShareLink}
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-warm-300 bg-warm-50 py-3.5 text-sm font-medium text-[#3d2e26] hover:bg-warm-100 transition-colors"
+              >
+                <span>{copyState === 'copied' ? '✅' : '🔗'}</span>
+                {copyState === 'copied' ? '복사됨' : '링크 공유'}
+              </button>
+            </div>
 
-                  <button
-                    type="button"
-                    onClick={handleCopyLink}
-                    className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-warm-300 bg-warm-50 py-3 text-sm font-medium text-[#3d2e26] hover:bg-warm-100 transition-colors"
-                  >
-                    <span>{copyState === 'copied' ? '✅' : '🔗'}</span>
-                    {copyState === 'copied' ? '복사됨' : '링크 복사'}
-                  </button>
-                </div>
-              </>
+            {shareNotice && (
+              <p className="rounded-xl bg-warm-100 px-4 py-2.5 text-xs leading-relaxed text-[#8a7570]">
+                ℹ️ {shareNotice}
+              </p>
             )}
           </div>
         )}
