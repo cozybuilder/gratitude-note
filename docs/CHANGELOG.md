@@ -43,6 +43,12 @@
   - 모든 font-weight 700 제거, 본문 400 / 제목 최대 600
   - 요소 간 최소 20-30px 여백 확보
 - `src/index.css` — body font-weight: 700 제거 (OnGel bold 뭉개짐 방지)
+- `src/index.css` — html font-size 19px → 20px (+5.3%)
+- `src/pages/SettingsPage.tsx` — 알림 설정 섹션 정리
+  - "감사일기 리마인더" 항목 행 제거
+  - 권한 미허용 시 컴팩트 배너로 대체 (허용하기 버튼 유지)
+  - 저녁 6시 알림 아이콘 🌇 → 🔔
+  - "1분 뒤 테스트 알림 보내기" 버튼 제거 (함수 보존, UI에서만 제거)
 - `src/utils/backup.ts` — BACKUP_VERSION 1.7.1 → 1.8.0
 - `android/app/build.gradle` — versionCode 3→4, versionName 1.7.1→1.8.0
 
