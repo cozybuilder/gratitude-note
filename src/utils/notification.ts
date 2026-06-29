@@ -72,7 +72,25 @@ function isTodayWritten(): boolean {
 // Android Native: Capacitor Local Notifications
 // ─────────────────────────────────────────────────────────────────
 
+// Android 8.0+ 필수: 알림 채널을 먼저 생성해야 알림이 전달됨
+async function ensureChannel(): Promise<void> {
+  try {
+    await LocalNotifications.createChannel({
+      id: 'gratitude-reminder',
+      name: '감사 리마인더',
+      description: '매일 감사 기록 리마인더',
+      importance: 4,   // IMPORTANCE_HIGH
+      visibility: 1,   // VISIBILITY_PUBLIC
+      vibration: true,
+    })
+  } catch {
+    // 채널이 이미 존재하거나 iOS(채널 미지원) — 무시
+  }
+}
+
 async function scheduleNativeReminders(): Promise<void> {
+  await ensureChannel()
+
   // 기존 예약 알림 전부 취소 후 재등록 (설정 변경 반영)
   try {
     const pending = await LocalNotifications.getPending()
@@ -91,7 +109,6 @@ async function scheduleNativeReminders(): Promise<void> {
       title: '오늘의 감사일기',
       body: '오늘 감사했던 일 3가지를 기록해보세요.',
       schedule: {
-        // Exact Alarm 미사용 — 매일 반복 방식
         on: { hour: 18, minute: 0 },
         allowWhileIdle: true,
       },
@@ -247,18 +264,15 @@ export const isNativePlatform = isNative
  */
 export async function scheduleTestNotification(): Promise<void> {
   if (!isNative) return
+  await ensureChannel()
   const at = new Date(Date.now() + 60 * 1000)
-  try {
-    await LocalNotifications.schedule({
-      notifications: [{
-        id: 9999,
-        title: '감사일기 테스트 알림',
-        body: '알림이 정상적으로 동작합니다 🌿',
-        schedule: { at, allowWhileIdle: true },
-        channelId: 'gratitude-reminder',
-      }],
-    })
-  } catch {
-    // 권한 없음 또는 스케줄 실패 무시
-  }
+  await LocalNotifications.schedule({
+    notifications: [{
+      id: 9999,
+      title: '감사일기 테스트 알림',
+      body: '알림이 정상적으로 동작합니다 🌿',
+      schedule: { at, allowWhileIdle: true },
+      channelId: 'gratitude-reminder',
+    }],
+  })
 }

@@ -47,4 +47,6 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Android 알람 수신 (Local Notifications 플러그인 재부팅 후 복구) -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Android 12+ 정확한 시간 알람 (at: 방식 테스트 알림 + 정기 알람) -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 </manifest>
