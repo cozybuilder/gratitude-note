@@ -16,9 +16,10 @@
 | **Android versionName** | 1.8.0 |
 | **Play Store 상태** | v1.7.1 프로덕션 출시 완료 → v1.8.0 Signed AAB 빌드 후 업로드 예정 |
 | **AI 기능** | 구현 완료, 기본 OFF (`ENABLE_BADGE_AI_API = false`) |
-| **Local Notifications** | @capacitor/local-notifications@8.2.0 도입, Android 앱 알림 정상화 |
+| **Local Notifications** | @capacitor/local-notifications@8.2.0 도입, 알림 채널 생성 포함, 18시/22시 정상 발송 확인 |
 | **Native Share** | @capacitor/share@8.0.1 도입, Android 시스템 공유 시트 연결 |
-| **AdMob** | @capacitor-community/admob@8.0.0 패키지 설치 완료, v1.8.0에서 배너 미노출 (v1.9.0 이후 검토) |
+| **AdMob** | @capacitor-community/admob@8.0.0 패키지·인프라 준비 완료, **v1.8.0 배너 미노출** (v1.9.0 이후 검토) |
+| **뒤로가기 UX** | @capacitor/app@8.1.0 도입, 모달 열림 시 Android 뒤로가기가 앱 종료 대신 모달 닫기 실행 |
 | **빌드 상태** | `npm run build` 통과 ✅ / `npx cap sync android` 통과 ✅ |
 
 ---
@@ -90,13 +91,15 @@ src/
 │   ├── streak.ts              — 연속 기록 계산 (4AM 날짜 경계)
 │   ├── date.ts                — getGratitudeDate(), 4AM 기준 날짜
 │   ├── backup.ts              — JSON 백업/복원
-│   ├── shareCard.ts           — 공유 카드 이미지 생성
-│   └── notification.ts        — 알림 설정
+│   ├── shareCard.ts           — 공유 카드 이미지 생성 (Canvas, QR 포함)
+│   ├── notification.ts        — 알림 설정 (Capacitor LocalNotifications)
+│   └── backButton.ts          — Android 뒤로가기 핸들러 스택
 ├── hooks/
 │   ├── useNotes.ts            — 감사 기록 CRUD 훅
 │   ├── useStreak.ts           — streak 계산 훅
 │   ├── useAchievements.ts     — 배지 획득 감지 + 비동기 메시지 생성
-│   └── useTheme.ts            — 다크/라이트 모드
+│   ├── useTheme.ts            — 다크/라이트 모드
+│   └── useAndroidBack.ts      — 모달 마운트 중 Android 뒤로가기 가로채기
 └── pages/                     — 각 화면 컴포넌트
 
 api/
@@ -139,6 +142,7 @@ Android 배포는 별도 수동 빌드 → Play Store 업로드 (→ `docs/RELEA
 
 ## 8. 다음 작업 후보
 
-- [ ] Play Store 정식 출시 승인 진행
+- [ ] Android Studio Signed AAB 빌드 → Play Console 프로덕션 업로드 (v1.8.0, versionCode 4)
+- [ ] 실기기 최종 검증 (→ `docs/STATUS.md` 휴대폰 테스트 항목)
 - [ ] AI 배지 메시지 활성화 시점 결정 (DAU 기반 비용 시뮬레이션 후)
-- [ ] v1.8 기능 기획 (→ `docs/DECISIONS.md` 참조)
+- [ ] v1.9.0 기획: AdMob 배너 네이티브 레이아웃 방식 재검토

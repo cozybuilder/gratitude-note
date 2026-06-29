@@ -5,58 +5,86 @@
 
 ---
 
-## [1.8.0] — Android Local Notifications + Native Share
+## [1.8.0] — Android Notifications + Native Share + UX 개선 (2026-06-30)
 
 ### Added
+
 - `@capacitor/local-notifications@8.2.0` — Android 앱 종료 후에도 OS가 알림 발송
 - `@capacitor/share@8.0.1` — Android 시스템 공유 시트 (카카오/인스타 포함)
-- `@capacitor-community/admob@8.0.0` — 패키지 설치 완료, v1.8.0에서 배너 미노출 (v1.9.0 이후 활성화 예정)
-- `android/app/src/main/AndroidManifest.xml` — POST_NOTIFICATIONS / RECEIVE_BOOT_COMPLETED 권한 추가
-- `android/app/src/main/AndroidManifest.xml` — AdMob 테스트 App ID meta-data 추가 (미래 활성화 대비)
+- `@capacitor/filesystem@8.1.2` — 공유용 이미지 임시 파일 저장
+- `@capacitor/app@8.1.0` — Android 물리/제스처 뒤로가기 이벤트 처리
+- `@capacitor-community/admob@8.0.0` — 패키지·인프라 준비 완료, **v1.8.0 배너 미노출** (v1.9.0 이후 검토)
+  - app-ads.txt CozyBuilder 홈페이지 구축 완료
+  - AndroidManifest.xml AdMob 테스트 App ID meta-data 추가 (미래 활성화 대비)
+- `android/app/src/main/AndroidManifest.xml`
+  - POST_NOTIFICATIONS, RECEIVE_BOOT_COMPLETED, SCHEDULE_EXACT_ALARM 권한 추가
 - `capacitor.config.ts` — LocalNotifications 아이콘/색상 설정
+- `src/utils/backButton.ts` (신규) — Android 뒤로가기 핸들러 스택 (`pushBackHandler`, `initBackButton`)
+- `src/hooks/useAndroidBack.ts` (신규) — 모달 마운트 중 뒤로가기 가로채는 React 훅 (`active` 파라미터 지원)
 - `src/pages/PrivacyPage.tsx` — 개인정보처리방침 전용 페이지
+- `public/font/ongel.ttf` — OnGel 폰트 적용
 
 ### Changed
-- `src/utils/notification.ts` — Web Notification API → Capacitor LocalNotifications 분기
-  - Android Native: `LocalNotifications.schedule()` 기반, 앱 종료 후에도 발송
-  - Web/PWA: 기존 Web Notification API setTimeout 유지
-  - Exact Alarm 미사용 (Play 정책 리스크 회피)
-  - 알림 ON/OFF 설정 시 기존 예약 취소 후 재등록
-- `src/App.tsx` — 알림 초기화 비동기 처리 (`getNotificationPermissionAsync`)
-- `src/pages/SettingsPage.tsx`
-  - "이 브라우저는 알림을 지원하지 않습니다" → "이 환경에서는 알림이 지원되지 않습니다"
-  - Android 앱에서 권한 상태 비동기 확인 (Capacitor API)
-  - APP_VERSION 1.7.1 → 1.8.0
-- `src/components/note/ShareCardModal.tsx` — @capacitor/share 도입 + UI 단순화
-  - Android Native: Filesystem 임시 파일 저장 → `Share.share({ files: [uri] })` (시스템 공유 시트)
-  - Android Native: 단일 "이미지 공유" 버튼만 표시 ("이미지 저장"·"링크 복사" 제거)
-  - Android Native: "카카오톡, 인스타그램, 갤러리 등으로 이미지를 바로 공유할 수 있습니다." 안내문 표시
-  - Web/PWA: 기존 3개 버튼 유지 (이미지 공유 / 이미지 저장 / 링크 복사)
-- `src/utils/notification.ts` — `scheduleTestNotification()` 추가 (진단용 1분 뒤 알림)
-- `src/pages/SettingsPage.tsx` — Android + 권한 허용 시 "1분 뒤 테스트 알림 보내기" 버튼 표시 (진단용)
-- `src/components/ad/AdBanner.tsx` — HTML in-flow placeholder (광고 미노출, 컴포넌트 보존)
-- `src/pages/HomePage.tsx` — AdBanner 렌더링 제거 (v1.8.0 광고 미노출 결정)
+
+**알림**
+- `src/utils/notification.ts`
+  - Web Notification API → Capacitor LocalNotifications Android 분기
+  - `ensureChannel()` 추가: 스케줄 전 `LocalNotifications.createChannel()` 강제 호출 (채널 미생성 버그 수정)
+  - 알림 채널 `gratitude-reminder`: IMPORTANCE_HIGH, 진동 ON
+  - `scheduleTestNotification()` 추가 (진단용·UI 비노출·함수 보존)
+  - 18시/22시 반복 알림: `on: { hour, minute }` + `allowWhileIdle: true`
+- `src/App.tsx`
+  - 알림 초기화 비동기 처리
+  - Android 뒤로가기 글로벌 리스너 초기화 (`initBackButton`)
+
+**공유 카드**
+- `src/components/note/ShareCardModal.tsx`
+  - Android: Filesystem 임시 파일 저장 → `Share.share({ files: [uri] })` (시스템 공유 시트)
+  - [이미지 공유] [링크 공유] 2버튼 (Android·Web 공통)
+  - `useAndroidBack(onClose)` 추가
 - `src/utils/shareCard.ts` — 공유 카드 레이아웃 전면 재설계
-  - 상단 2줄 태그라인: "오늘의 감사한 일을 공유해보세요." / "작은 감사가 누군가의 하루를 따뜻하게 만듭니다."
-  - 서브 슬로건 삽입: "하루 3개의 감사가 삶의 질을 바꿉니다" (구 섹션 헤더 삭제)
-  - 하단 홍보 문구 2줄 삭제 → URL만 남김 (`cozybuilder.co.kr/programs/r`, 32px)
-  - 모든 font-weight 700 제거, 본문 400 / 제목 최대 600
-  - 요소 간 최소 20-30px 여백 확보
-- `src/index.css` — body font-weight: 700 제거 (OnGel bold 뭉개짐 방지)
-- `src/index.css` — html font-size 19px → 20px (+5.3%)
-- `src/pages/SettingsPage.tsx` — 알림 설정 섹션 정리
-  - "감사일기 리마인더" 항목 행 제거
-  - 권한 미허용 시 컴팩트 배너로 대체 (허용하기 버튼 유지)
+  - 앱 아이콘 + QR코드 나란히 배치 (플레이스토어 링크 QR)
+  - 상단 2줄 태그라인
+  - 서브 슬로건: "하루 3개의 감사가 삶의 질을 바꿉니다"
+  - 하단 URL: `cozybuilder.co.kr/programs/r` 32px (홍보 문구 전체 삭제)
+  - 전체 font-weight 400/최대 600 (700 제거)
+
+**설정 화면**
+- `src/pages/SettingsPage.tsx`
+  - APP_VERSION 1.7.1 → 1.8.0
+  - 알림 섹션 단순화: "감사일기 리마인더" 행 제거, 컴팩트 권한 배너로 대체
   - 저녁 6시 알림 아이콘 🌇 → 🔔
-  - "1분 뒤 테스트 알림 보내기" 버튼 제거 (함수 보존, UI에서만 제거)
+  - 테스트 알림 버튼 UI 제거 (함수 보존)
+
+**폰트·스타일**
+- `src/index.css`
+  - font-family: KyoboHandwriting → OnGel
+  - `font-weight: 700` 전역 제거 (synthetic bold 뭉개짐 방지)
+  - html `font-size`: 19px → 20px (+5.3%)
+
+**배지·모달 UX**
+- `src/components/badge/BadgeCelebrationModal.tsx` — `useAndroidBack(onClose)` 추가
+- `src/components/common/Modal.tsx` — `useAndroidBack(onCancel, isOpen)` 추가
+- `src/pages/BadgePage.tsx` — 뒤로가기 버튼: `‹` 텍스트 → 40×40px 원형 SVG 화살표 버튼
+
+**버전**
 - `src/utils/backup.ts` — BACKUP_VERSION 1.7.1 → 1.8.0
 - `android/app/build.gradle` — versionCode 3→4, versionName 1.7.1→1.8.0
 
+**광고**
+- `src/components/ad/AdBanner.tsx` — 컴포넌트 보존, 화면 노출 없음
+- `src/pages/HomePage.tsx` — AdBanner 렌더링 제거
+
+### Fixed
+
+- **알림 미발송**: `LocalNotifications.createChannel()` 미호출 → Android 8.0+에서 채널 없으면 알림 무음 폐기. `ensureChannel()`로 해결.
+- **SCHEDULE_EXACT_ALARM 누락**: Android 12+에서 exact alarm(`at:`) 실패 → 권한 추가로 해결.
+
 ### Decision
-- AdMob overlay 방식은 실기기에서 BottomNav/콘텐츠 침범 확인 → v1.8.0 광고 노출 제외 결정
-- HTML placeholder는 수익화 미연결 → 화면 노출 제거
-- @capacitor-community/admob 패키지는 유지 (v1.9.0에서 네이티브 레이아웃 수정 검토)
-- 전면 광고 / 보상형 광고 금지 원칙 유지
+
+- AdMob overlay 방식은 실기기에서 BottomNav/콘텐츠 침범 확인 → v1.8.0 광고 노출 **최종 보류**
+- @capacitor-community/admob 패키지·인프라 유지 (v1.9.0 이후 네이티브 레이아웃 수정 후 활성화 검토)
+- 전면 광고·보상형 광고 금지 원칙 유지
 
 ---
 

@@ -170,6 +170,52 @@
 
 ---
 
+## [v1.8.0] Android LocalNotifications 채널을 스케줄 전에 반드시 생성한다
+
+**상태**: 확정
+
+**결정 내용**: `LocalNotifications.schedule()` 호출 전 `LocalNotifications.createChannel()`을 항상 먼저 호출하는 `ensureChannel()` 함수를 두고, 모든 스케줄 진입점에서 실행한다.
+
+**이유**: Android 8.0(API 26)+ 에서는 알림 채널이 존재하지 않으면 알림이 소리·진동 없이 OS에서 조용히 폐기된다. `channelId`를 지정해도 채널을 먼저 만들지 않으면 미발송. 실기기 테스트에서 이 버그로 알림 0% 도달률 확인 → 수정 후 정상화.
+
+**구현**: `src/utils/notification.ts`의 `ensureChannel()` — `createChannel()`이 이미 존재하는 채널에 호출되면 무시되므로 멱등성 보장.
+
+---
+
+## [v1.8.0] Android 12+ exact alarm은 SCHEDULE_EXACT_ALARM 권한이 필요하다
+
+**상태**: 확정
+
+**결정 내용**: `AndroidManifest.xml`에 `SCHEDULE_EXACT_ALARM` 권한을 추가한다.
+
+**이유**: `LocalNotifications.schedule({ at: new Date(...) })` 방식은 Android 12(API 31)+ 에서 `AlarmManager.setExact()` 계열로 처리되며, 이 권한 없이는 예약이 실패한다. 권한 요청 없이 선언만 해도 시스템이 부여하는 일반 권한(normal permission)으로, 사용자 다이얼로그 불필요. (Android 13의 `USE_EXACT_ALARM`과 다름 — 앱 카테고리 제한 없이 사용 가능)
+
+---
+
+## [v1.8.0] AdMob 배너를 v1.8.0에서 미노출하고 인프라만 보존한다
+
+**상태**: 확정
+
+**결정 내용**: `@capacitor-community/admob` 패키지와 AndroidManifest meta-data는 유지하되, 배너 컴포넌트는 화면에 렌더링하지 않는다.
+
+**이유**: AdMob overlay 방식(WebView 위에 네이티브 배너 오버레이)은 실기기 테스트에서 BottomNav와 콘텐츠 영역 침범 확인. 인라인 배치(WebView 높이 축소 + 하단 AdView)는 Capacitor와 구조적 충돌 있음. 수익화보다 UX 품질 우선 → 미노출 결정. v1.9.0에서 네이티브 레이아웃 방식 재검토 예정. app-ads.txt는 CozyBuilder 홈페이지에 구축 완료.
+
+**재검토 조건**: v1.9.0에서 네이티브 레이아웃(android:layout 수정)으로 WebView 높이를 줄여 배너 공간 확보하는 방식 검토.
+
+---
+
+## [v1.8.0] Android 뒤로가기 처리를 핸들러 스택으로 관리한다
+
+**상태**: 확정
+
+**결정 내용**: `src/utils/backButton.ts`에 핸들러 스택을 두고, 모달/오버레이 마운트 시 `pushBackHandler(onClose)`로 등록·언마운트 시 자동 제거. App.tsx에서 `initBackButton()`으로 `Capacitor App.addListener('backButton', ...)` 글로벌 리스너 1회 초기화.
+
+**이유**: React 컴포넌트마다 Capacitor 리스너를 직접 등록하면 여러 리스너가 동시에 실행되어 순서 보장 불가. 스택 구조는 가장 나중에 열린 모달이 먼저 닫히는 자연스러운 UX 구현. Context Provider 없이 싱글턴으로 단순하게 구현.
+
+**적용 대상**: `ShareCardModal`, `BadgeCelebrationModal`, `Modal(common)`.
+
+---
+
 ## 보류 중인 결정
 
 ### [보류] 감사 기록 검색 기능 추가 여부
