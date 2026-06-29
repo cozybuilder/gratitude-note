@@ -5,14 +5,16 @@
 
 ---
 
-## [1.8.0] — Android Local Notifications + AdMob 테스트 배너
+## [1.8.0] — Android Local Notifications + Native Share
 
 ### Added
 - `@capacitor/local-notifications@8.2.0` — Android 앱 종료 후에도 OS가 알림 발송
-- `@capacitor-community/admob@8.0.0` — Capacitor Android 네이티브 배너 광고
+- `@capacitor/share@8.0.1` — Android 시스템 공유 시트 (카카오/인스타 포함)
+- `@capacitor-community/admob@8.0.0` — 패키지 설치 완료, v1.8.0에서 배너 미노출 (v1.9.0 이후 활성화 예정)
 - `android/app/src/main/AndroidManifest.xml` — POST_NOTIFICATIONS / RECEIVE_BOOT_COMPLETED 권한 추가
-- `android/app/src/main/AndroidManifest.xml` — AdMob 테스트 App ID meta-data 추가
+- `android/app/src/main/AndroidManifest.xml` — AdMob 테스트 App ID meta-data 추가 (미래 활성화 대비)
 - `capacitor.config.ts` — LocalNotifications 아이콘/색상 설정
+- `src/pages/PrivacyPage.tsx` — 개인정보처리방침 전용 페이지
 
 ### Changed
 - `src/utils/notification.ts` — Web Notification API → Capacitor LocalNotifications 분기
@@ -25,19 +27,19 @@
   - "이 브라우저는 알림을 지원하지 않습니다" → "이 환경에서는 알림이 지원되지 않습니다"
   - Android 앱에서 권한 상태 비동기 확인 (Capacitor API)
   - APP_VERSION 1.7.1 → 1.8.0
-- `src/components/ad/AdBanner.tsx` — Web AdSense → Capacitor AdMob 전면 교체
-  - Android Native 환경에서만 배너 표시 (`Capacitor.isNativePlatform()`)
-  - Web/PWA에서는 null 반환 (광고 미표시)
-  - 환경변수 미설정 시 Google 공식 테스트 광고 ID 자동 사용
-- `src/pages/PrivacyPage.tsx` — 광고 섹션에 AdMob/광고 ID 수집 안내 추가
+- `src/components/note/ShareCardModal.tsx` — @capacitor/share 도입
+  - Android Native: FileReader → base64 dataURL → `Share.share()` (시스템 공유 시트)
+  - Web/PWA: 기존 `navigator.share(File)` 유지
+- `src/components/ad/AdBanner.tsx` — HTML in-flow placeholder (광고 미노출, 컴포넌트 보존)
+- `src/pages/HomePage.tsx` — AdBanner 렌더링 제거 (v1.8.0 광고 미노출 결정)
 - `src/utils/backup.ts` — BACKUP_VERSION 1.7.1 → 1.8.0
 - `android/app/build.gradle` — versionCode 3→4, versionName 1.7.1→1.8.0
 
-### Policy
-- AdMob 배너 광고 위치: 홈 하단 BottomNav 위 고정 (1개)
+### Decision
+- AdMob overlay 방식은 실기기에서 BottomNav/콘텐츠 침범 확인 → v1.8.0 광고 노출 제외 결정
+- HTML placeholder는 수익화 미연결 → 화면 노출 제거
+- @capacitor-community/admob 패키지는 유지 (v1.9.0에서 네이티브 레이아웃 수정 검토)
 - 전면 광고 / 보상형 광고 금지 원칙 유지
-- 감사 기록 작성 화면에 광고 미표시
-- 운영 광고 ID는 추후 `.env.local`로 교체 (현재 테스트 ID)
 
 ---
 

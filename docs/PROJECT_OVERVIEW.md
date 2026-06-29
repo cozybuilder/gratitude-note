@@ -17,7 +17,8 @@
 | **Play Store 상태** | v1.7.1 프로덕션 출시 완료 → v1.8.0 Signed AAB 빌드 후 업로드 예정 |
 | **AI 기능** | 구현 완료, 기본 OFF (`ENABLE_BADGE_AI_API = false`) |
 | **Local Notifications** | @capacitor/local-notifications@8.2.0 도입, Android 앱 알림 정상화 |
-| **AdMob** | @capacitor-community/admob@8.0.0 도입, 테스트 배너 구조 완료 |
+| **Native Share** | @capacitor/share@8.0.1 도입, Android 시스템 공유 시트 연결 |
+| **AdMob** | @capacitor-community/admob@8.0.0 패키지 설치 완료, v1.8.0에서 배너 미노출 (v1.9.0 이후 검토) |
 | **빌드 상태** | `npm run build` 통과 ✅ / `npx cap sync android` 통과 ✅ |
 
 ---
